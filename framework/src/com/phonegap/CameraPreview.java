@@ -192,11 +192,18 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         // XXX stopPreview() will crash if preview is not running
         if (mPreviewRunning) {
             mCamera.stopPreview();
+        }                                   
+          
+        Camera.Parameters p = mCamera.getParameters();   
+        
+        try {                    
+          p.setPictureSize(640, 480);                         
+          mCamera.setParameters(p);                                 
+        }catch(Exception e){
+          e.printStackTrace();
+          Log.e(TAG, "Error setting camera parameters!");
+          Log.d(TAG, "current Camera.Parameters: " + p.flatten());
         }
-
-        Camera.Parameters p = mCamera.getParameters();
-        p.setPreviewSize(w, h);
-        mCamera.setParameters(p);
 
         try {
 			mCamera.setPreviewDisplay(holder);
