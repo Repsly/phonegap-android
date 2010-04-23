@@ -44,7 +44,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
     {
         super.onCreate(icicle);
 
-        Log.e(TAG, "onCreate");
+        Log.d(TAG, "onCreate");
 
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         
@@ -117,7 +117,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
     
     Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera c) {
-            Log.e(TAG, "PICTURE CALLBACK: data.length = " + data.length);
+            Log.d(TAG, "PICTURE CALLBACK: data.length = " + data.length);
             storeAndExit(data);
         }
     };
@@ -163,7 +163,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
     protected void onResume()
     {
-        Log.e(TAG, "onResume");
+        Log.d(TAG, "onResume");
         super.onResume();
     }
 
@@ -174,20 +174,20 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
     protected void onStop()
     {
-        Log.e(TAG, "onStop");
+        Log.d(TAG, "onStop");
         super.onStop();
     }
 
     public void surfaceCreated(SurfaceHolder holder)
     {
-        Log.e(TAG, "surfaceCreated");
+        Log.d(TAG, "surfaceCreated");
         mCamera = Camera.open();
         //mCamera.startPreview();
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
     {
-        Log.e(TAG, "surfaceChanged");
+        Log.d(TAG, "surfaceChanged");
 
         // XXX stopPreview() will crash if preview is not running
         if (mPreviewRunning) {
@@ -197,6 +197,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         Camera.Parameters p = mCamera.getParameters();
         p.setPreviewSize(w, h);
         mCamera.setParameters(p);
+
         try {
 			mCamera.setPreviewDisplay(holder);
 		} catch (IOException e) {
@@ -209,7 +210,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        Log.e(TAG, "surfaceDestroyed");
+        Log.d(TAG, "surfaceDestroyed");
         mCamera.stopPreview();
         mPreviewRunning = false;
         mCamera.release();
