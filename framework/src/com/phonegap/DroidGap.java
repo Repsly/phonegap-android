@@ -259,30 +259,28 @@ public class DroidGap extends Activity {
 	}
 	
   
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {       
-        	String testUrl = appView.getUrl();
-            appView.goBack();
-            if(appView.getUrl() == testUrl)
-            {
-            	return super.onKeyDown(keyCode, event);
-            }
-        }
-        
-        if (keyCode == KeyEvent.KEYCODE_MENU) 
-        {
-        	appView.loadUrl("javascript:keyEvent.menuTrigger()");
-        }
-        
-        if (keyCode == KeyEvent.KEYCODE_SEARCH) 
-        {
-        	appView.loadUrl("javascript:keyEvent.searchTrigger()");
-        }
-        
-        return false;
-    }
-	
+  public boolean onKeyDown(int keyCode, KeyEvent event)
+  {
+      if (keyCode == KeyEvent.KEYCODE_BACK) 
+      {
+        appView.loadUrl("javascript:keyEvent.backTrigger()");
+        return true;
+      }
+
+      if (keyCode == KeyEvent.KEYCODE_MENU) 
+      {
+        appView.loadUrl("javascript:keyEvent.menuTrigger()");
+        return true;
+      }
+
+      if (keyCode == KeyEvent.KEYCODE_SEARCH) 
+      {
+        appView.loadUrl("javascript:keyEvent.searchTrigger()");
+        return true;
+      }
+
+      return false;
+  }
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera(int quality)
     {
