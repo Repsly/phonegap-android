@@ -36,8 +36,10 @@ import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.MotionEvent;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.WebViewClient; 
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -47,7 +49,7 @@ import android.os.Build.*;
 
 public class DroidGap extends Activity {
 		
-	private static final String LOG_TAG = "DroidGap";
+	private static final String LOG_TAG = "PhoneGapDroidGap";
 	protected WebView appView;
 	private LinearLayout root;	
 	
@@ -87,15 +89,32 @@ public class DroidGap extends Activity {
         
         WebViewReflect.checkCompatibility();
                 
-        if (android.os.Build.VERSION.RELEASE.startsWith("2."))
-        	appView.setWebChromeClient(new EclairClient(this));        	
+        if (android.os.Build.VERSION.RELEASE.startsWith("2.")){
+          appView.setWebChromeClient(new EclairClient(this));
+          appView.setWebViewClient(new WebViewClient() {
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+              Log.d(LOG_TAG, "onReceivedError " + description);
+            }
+
+            public void onScaleChanged (WebView view, float oldScale, float newScale){
+              Log.d(LOG_TAG, "onScaleChanged oldScale: " + Float.toString(oldScale) + " newScale: " + Float.toString(newScale));
+            }
+
+            public boolean shouldOverrideKeyEvent (WebView view, KeyEvent event){
+              Log.d(LOG_TAG, "shouldOverrideKeyEvent");
+              return false;
+            }
+          });
+        }
         else
         {        
         	appView.setWebChromeClient(new GapClient(this));
         }
         
         appView.setInitialScale(100);
-        appView.setVerticalScrollBarEnabled(false);
+        appView.setVerticalScrollBarEnabled(true);
+        appView.setVerticalScrollbarOverlay(true);
+        appView.setHorizontalScrollbarOverlay(true);
         
         WebSettings settings = appView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -191,7 +210,7 @@ public class DroidGap extends Activity {
 	        result.confirm();
 	        return true;
 	    }
-		
+
 		/*
 		 * This is the Code for the OK Button
 		 */
@@ -261,9 +280,20 @@ public class DroidGap extends Activity {
 		
 	}
 	
+  public boolean onTouchEvent (MotionEvent ev)  {
+    Log.d(LOG_TAG, "onTouchEvent " + ev.toString());
+    return true;
+  }
+  
+  public boolean onTrackballEvent (MotionEvent ev){
+    Log.d(LOG_TAG, "onTrackballEvent " + ev.toString());
+    return false;
+  }
   
   public boolean onKeyDown(int keyCode, KeyEvent event)
   {
+      Log.d("PhoneGapLog", "onKeyDown " + Integer.toString(keyCode));
+    
       if (keyCode == KeyEvent.KEYCODE_BACK) 
       {
         appView.loadUrl("javascript:keyEvent.backTrigger()");
@@ -272,7 +302,7 @@ public class DroidGap extends Activity {
 
       if (keyCode == KeyEvent.KEYCODE_MENU) 
       {
-        appView.loadUrl("javascript:keyEvent.menuTrigger()");
+        appView.loadUrl("file:///android_asset/www/index.html");//"javascript:keyEvent.menuTrigger()");
         return true;
       }
 

@@ -20,7 +20,7 @@ public class ContactManager {
 		public String phone = "";
 	}
 	
-	private static final String LOG_TAG = "Contact Query";
+	private static final String LOG_TAG = "PhoneGapContactQuery";
 	Activity mApp;
 	WebView mView;
 	Uri mPeople = android.provider.Contacts.People.CONTENT_URI;
