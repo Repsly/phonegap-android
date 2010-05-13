@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -43,6 +44,7 @@ import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
 import android.os.Build.*;
@@ -111,6 +113,8 @@ public class DroidGap extends Activity {
         	appView.setWebChromeClient(new GapClient(this));
         }
         
+        appView.setWebViewClient(new GapViewClient(this));
+        
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(true);
         appView.setVerticalScrollbarOverlay(true);
@@ -135,7 +139,8 @@ public class DroidGap extends Activity {
         if(cupcakeStorage != null)
         	cupcakeStorage.setStorage(appPackage);
                 
-        root.addView(appView);                   
+        root.addView(appView);   
+        
         setContentView(root);                        
     }
 	
@@ -182,6 +187,56 @@ public class DroidGap extends Activity {
 		appView.loadUrl(url);
 	}
 
+	public class GapViewClient extends WebViewClient {		
+		
+		Context mCtx;
+		
+		public GapViewClient(Context ctx)
+		{
+			mCtx = ctx;
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see android.webkit.WebViewClient#shouldOverrideUrlLoading(android.webkit.WebView, java.lang.String)
+		 * 
+		 * Note: Since we override it to make sure that we are using PhoneGap and not some other bullshit
+		 * viewer that may or may not exist, we need to make sure that http:// and tel:// still work.
+		 * 
+		 */
+		
+	    @Override
+	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	    	// TODO: See about using a switch statement
+	    	if (url.startsWith("http://"))
+	    	{
+	    		Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+	    		startActivity(browse);
+	    		return true;
+	    	}
+	    	else if(url.startsWith("tel://"))
+	    	{
+	    		Intent dial = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+	    		startActivity(dial);
+	    		return true;
+	    	}
+	    	else if(url.startsWith("sms:"))
+	    	{  
+	    		Uri smsUri = Uri.parse(url);
+	    		Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
+	    		intent.setType("vnd.android-dir/mms-sms");
+	    		startActivity(intent);
+	    		return true;
+	    	}
+	    	else
+	    	{
+	    		view.loadUrl(url);
+	    		return false;
+	    	}
+	    }
+	}
+	
+	
   /**
     * Provides a hook for calling "alert" from javascript. Useful for
     * debugging your javascript.
