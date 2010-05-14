@@ -152,7 +152,7 @@ public class DroidGap extends Activity {
     	accel = new AccelListener(this, appView);
     	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(this, appView);
-    	fs = new FileUtils(appView);
+    	fs = new FileUtils(appView); 
     	netMan = new NetworkManager(this, appView);
     	mCompass = new CompassListener(this, appView);  
     	crypto = new CryptoHandler(appView);

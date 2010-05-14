@@ -123,28 +123,33 @@ FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, error
 	var test = FileUtil.testDirectoryExists(dirName);
 	test ? successCallback() : errorCallback();
 }
-
-FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback)
+        
+FileMgr.prototype.readFile = function(fileName)
 {
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	var test = FileUtils.createDirectory(dirName);
-	test ? successCallback() : errorCallback();
+	return "" + FileUtil.read(fileName) + "";
+}
+
+FileMgr.prototype.writeFile = function(fileName, text, append)
+{             
+  append = !!append;                                        
+  return FileUtil.write(fileName, text, append) == 0;
+}
+
+FileMgr.prototype.deleteFile = function(fileName)
+{
+	return FileUtil.deleteFile(fileName) == 0;
+}       
+
+FileMgr.prototype.createDirectory = function(dirName)
+{
+	return FileUtil.createDirectory(dirName) == 0;
 }
 
 FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback)
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	var test = FileUtils.deleteDirectory(dirName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	FileUtils.deleteFile(fileName);
+	var test = FileUtil.deleteDirectory(dirName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -158,7 +163,7 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
 	{
 		this.successCallback = successCallback;
 		this.errorCallback = errorCallback;
-		this.freeDiskSpace = FileUtils.getFreeDiskSpace();
+		this.freeDiskSpace = FileUtil.getFreeDiskSpace();
   		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
 	}
 }
@@ -221,6 +226,6 @@ FileWriter.prototype.writeAsText = function(file,text,bAppend)
 	}
 	navigator.fileMgr.addFileWriter(file,this);
 	this.readyState = 0; // EMPTY
-  	var call = FileUtil.write(file, text, bAppend);
-	this.result = null;
+	this.result = FileUtil.write(file, text, bAppend) == 0;
+	return this.result;
 }
