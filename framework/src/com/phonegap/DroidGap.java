@@ -93,20 +93,6 @@ public class DroidGap extends Activity {
                 
         if (android.os.Build.VERSION.RELEASE.startsWith("2.")){
           appView.setWebChromeClient(new EclairClient(this));
-          appView.setWebViewClient(new WebViewClient() {
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-              Log.d(LOG_TAG, "onReceivedError " + description);
-            }
-
-            public void onScaleChanged (WebView view, float oldScale, float newScale){
-              Log.d(LOG_TAG, "onScaleChanged oldScale: " + Float.toString(oldScale) + " newScale: " + Float.toString(newScale));
-            }
-
-            public boolean shouldOverrideKeyEvent (WebView view, KeyEvent event){
-              Log.d(LOG_TAG, "shouldOverrideKeyEvent");
-              return false;
-            }
-          });
         }
         else
         {        
@@ -337,7 +323,7 @@ public class DroidGap extends Activity {
 	
   public boolean onTouchEvent (MotionEvent ev)  {
     Log.d(LOG_TAG, "onTouchEvent " + ev.toString());
-    return true;
+    return false;
   }
   
   public boolean onTrackballEvent (MotionEvent ev){
