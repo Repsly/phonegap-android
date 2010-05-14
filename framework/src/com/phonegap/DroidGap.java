@@ -33,6 +33,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -99,7 +101,14 @@ public class DroidGap extends Activity {
         	appView.setWebChromeClient(new GapClient(this));
         }
         
-        appView.setWebViewClient(new GapViewClient(this));
+        appView.setWebViewClient(new GapViewClient(this));       
+        appView.setOnTouchListener(new OnTouchListener() {
+          public boolean onTouch (View v, MotionEvent ev){
+            boolean handled = ev.getAction() > 2;
+            Log.d(LOG_TAG, "OnTouchListener handled: " + (handled ? "+ " : "- ") + " downTime: " + Long.toString(ev.getDownTime()) + " event: " + ev.toString()  );    
+            return handled;
+          }
+        });
         
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(true);
@@ -256,6 +265,35 @@ public class DroidGap extends Activity {
 	        result.confirm();
 	        return true;
 	    }
+	    
+	    
+	    @Override
+      public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) 
+      {
+          new AlertDialog.Builder(mCtx)
+              .setTitle(message)
+              //.setMessage(message)
+              .setPositiveButton("Da", //android.R.string.ok, 
+                      new DialogInterface.OnClickListener() 
+                      {
+                          public void onClick(DialogInterface dialog, int which) 
+                          {
+                              result.confirm();
+                          }
+                      })
+              .setNegativeButton("Ne",//android.R.string.cancel, 
+                      new DialogInterface.OnClickListener() 
+                      {
+                          public void onClick(DialogInterface dialog, int which) 
+                          {
+                              result.cancel();
+                          }
+                      })
+          .create()
+          .show();
+      
+          return true;
+      };
 
 		/*
 		 * This is the Code for the OK Button
@@ -327,8 +365,8 @@ public class DroidGap extends Activity {
 	}
 	
   public boolean onTouchEvent (MotionEvent ev)  {
-    Log.d(LOG_TAG, "onTouchEvent " + ev.toString());
-    return false;
+    Log.d(LOG_TAG, "onTouchEvent " + ev.toString());    
+    return ev.getAction() == 2;
   }
   
   public boolean onTrackballEvent (MotionEvent ev){
