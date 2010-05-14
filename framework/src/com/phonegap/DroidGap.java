@@ -193,6 +193,7 @@ public class DroidGap extends Activity {
 		
 	    @Override
 	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	      Log.d(LOG_TAG, "shouldOverrideUrlLoading url:" + url); 
 	    	// TODO: See about using a switch statement
 	    	if (url.startsWith("http://"))
 	    	{
@@ -213,6 +214,10 @@ public class DroidGap extends Activity {
 	    		intent.setType("vnd.android-dir/mms-sms");
 	    		startActivity(intent);
 	    		return true;
+	    	}   
+	    	//fix trackball click was reloading app
+	    	else if(url.startsWith("file:///android_asset/www/index.html")){
+	    	  return false;
 	    	}
 	    	else
 	    	{
