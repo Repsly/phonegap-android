@@ -3,7 +3,14 @@ package com.phonegap;
 import java.io.*;
 
 import android.webkit.WebView;                            
-import android.util.Log;
+import android.util.Log; 
+
+import java.util.ArrayList;               
+import java.io.IOException;   
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class FileUtils {
 
@@ -119,6 +126,25 @@ public class FileUtils {
     			return -1;
     		}
 		return 0;
+    }
+    
+    public String readLogs(){ // ArrayList<String>... params)
+      try{             
+        StringBuilder log = new StringBuilder();                    
+        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapClientLog:V PhoneGapDroidGap:I PhoneGapFileUtils:I PhoneGap:I PhoneGapSQLiteStorage:I *:S");// commandLine.toArray(new String[0]));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String line;
+        while ((line = bufferedReader.readLine()) != null){ 
+            log.append(line);
+            log.append("\n"); 
+        }                     
+        return log.toString();        
+      }       
+      catch (Exception e){
+        Log.e(LOG_TAG, "startLogging", e);
+        return "";
+      }
     }
     
 

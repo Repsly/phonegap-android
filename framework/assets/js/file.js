@@ -123,7 +123,11 @@ FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, error
 	var test = FileUtil.testDirectoryExists(dirName);
 	test ? successCallback() : errorCallback();
 }
-        
+                                               
+FileMgr.prototype.readLogs = function(){
+  return ("" + FileUtil.readLogs() + "").split("\n");
+} 
+       
 FileMgr.prototype.readFile = function(fileName)
 {
 	return "" + FileUtil.read(fileName) + "";

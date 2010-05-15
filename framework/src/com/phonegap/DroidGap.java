@@ -49,7 +49,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
-import android.os.Build.*;
+import android.os.Build.*;     
+
 
 public class DroidGap extends Activity {
 		
@@ -136,9 +137,9 @@ public class DroidGap extends Activity {
                 
         root.addView(appView);   
         
-        setContentView(root);                        
-    }
-	
+        setContentView(root);                                
+    } 
+        	
 	@Override
     public void onConfigurationChanged(Configuration newConfig) {
       //don't reload the current page when the orientation is changed
@@ -251,7 +252,7 @@ public class DroidGap extends Activity {
 		
 		@Override
 	    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-	        Log.d(LOG_TAG, message);
+	        //Log.d(LOG_TAG, message);
 	        // This shows the dialog box.  This can be commented out for dev
 	        AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
 	        GapOKDialog okHook = new GapOKDialog();
@@ -322,7 +323,7 @@ public class DroidGap extends Activity {
 	
 	public final class EclairClient extends GapClient
 	{		
-		private String TAG = "PhoneGapLog";
+		private String TAG = "PhoneGapClientLog";
 		private long MAX_QUOTA = 100 * 1024 * 1024;
 		
 		public EclairClient(Context ctx) {

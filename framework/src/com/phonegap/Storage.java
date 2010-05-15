@@ -8,7 +8,7 @@ import android.webkit.WebView;
 
 public class Storage {
 	
-	private static final String LOG_TAG = "SQLite Storage:";
+	private static final String LOG_TAG = "PhoneGapSQLiteStorage";
 	SQLiteDatabase myDb;
 	String path;
 	String txid = "";
