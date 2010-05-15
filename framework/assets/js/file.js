@@ -126,7 +126,11 @@ FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, error
                                                
 FileMgr.prototype.readLogs = function(){
   return ("" + FileUtil.readLogs() + "").split("\n");
-} 
+}     
+
+FileMgr.prototype.uuid = function(){
+  return FileUtil.uuid();
+}
        
 FileMgr.prototype.readFile = function(fileName)
 {
