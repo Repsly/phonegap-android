@@ -81,8 +81,6 @@ public class PhoneGap{
 	
 	public String getUuid()
 	{		
-		//TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);		
-		//String uuid = operator.getDeviceId();
 		String uuid = Settings.Secure.getString(mCtx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		return uuid;
 	}

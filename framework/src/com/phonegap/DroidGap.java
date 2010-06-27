@@ -49,11 +49,58 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
-import android.os.Build.*;     
+import android.os.Build.*;  
+
+import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
 
 
-public class DroidGap extends Activity {
-		
+public class DroidGap extends Activity  implements SimpleGestureListener {    
+  
+  
+      /*-------------------*/
+      private SimpleGestureFilter detector;
+      
+      @Override 
+      public boolean dispatchTouchEvent(MotionEvent me){ 
+        this.detector.onTouchEvent(me);
+        return super.dispatchTouchEvent(me); 
+      }
+
+      //@Override
+      public void onSwipe(int direction) {
+       String str = "";
+
+       switch (direction) {
+
+       case SimpleGestureFilter.SWIPE_RIGHT : 
+          str = "Swipe Right";
+          appView.loadUrl("javascript:keyEvent.backTrigger()");
+          break;
+       case SimpleGestureFilter.SWIPE_LEFT :  
+          str = "Swipe Left";
+          appView.loadUrl("javascript:keyEvent.forwardTrigger()"); 
+          break;
+       case SimpleGestureFilter.SWIPE_DOWN :  
+          str = "Swipe Down";
+          appView.pageUp(false);
+          break;
+       case SimpleGestureFilter.SWIPE_UP :    
+          str = "Swipe Up";
+          appView.pageDown(false);
+          break;
+
+       } 
+       Log.d(LOG_TAG, "---onSwipe---- :: " + str);
+        //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+      }
+
+      //@Override
+      public void onDoubleTap() {
+      	Log.d(LOG_TAG, "---onDoubleTap----");
+         //Toast.makeText(this, "Double Tap", Toast.LENGTH_SHORT).show(); 
+      }
+      /*---------------------------*/
+  	
 	private static final String LOG_TAG = "PhoneGapDroidGap";
 	protected WebView appView;
 	private LinearLayout root;	
@@ -88,8 +135,36 @@ public class DroidGap extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
         root.setLayoutParams(containerParams);
+                                    
+        //appView = new WebView(this);
                 
-        appView = new WebView(this);
+        appView = (new WebView(this){     
+          //private float lastMoveY;
+          
+          private long lastDownEvent = 0;
+          
+          @Override           
+          public boolean onTouchEvent(MotionEvent me) {              
+                                    
+            if (me.getAction() == 0){
+              lastDownEvent = System.currentTimeMillis();
+            }
+            if (me.getAction() == 2 && System.currentTimeMillis() - lastDownEvent > 300){
+              me.setAction(0);
+              lastDownEvent = System.currentTimeMillis() - 200;
+            }
+            
+            if (me.getAction() < 2 || me.getAction() == 3){                                
+              Log.d(LOG_TAG, "onTouchEvent + " + me.toString()); 
+              super.onTouchEvent(me);
+            	//lastMoveY = me.getY();
+            }else{
+              Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
+            }
+            return true;                
+          }
+        }); 
+                
         appView.setLayoutParams(webviewParams);
         
         WebViewReflect.checkCompatibility();
@@ -103,26 +178,21 @@ public class DroidGap extends Activity {
         }
         
         appView.setWebViewClient(new GapViewClient(this));       
-        appView.setOnTouchListener(new OnTouchListener() {
-          public boolean onTouch (View v, MotionEvent ev){
-            boolean handled = ev.getAction() > 2;
-            Log.d(LOG_TAG, "OnTouchListener handled: " + (handled ? "+ " : "- ") + " downTime: " + Long.toString(ev.getDownTime()) + " event: " + ev.toString()  );    
-            return handled;
-          }
-        });
-        
+                
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(true);
         appView.setVerticalScrollbarOverlay(true);
-        appView.setHorizontalScrollbarOverlay(true);
+        appView.setHorizontalScrollbarOverlay(true);  
+        appView.setSoundEffectsEnabled(true);
         
-        WebSettings settings = appView.getSettings();
+        WebSettings settings = appView.getSettings();               
+        
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
-    	Package pack = this.getClass().getPackage();
-    	String appPackage = pack.getName();
+        Package pack = this.getClass().getPackage();
+        String appPackage = pack.getName();
     	
         WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
         
@@ -137,7 +207,9 @@ public class DroidGap extends Activity {
                 
         root.addView(appView);   
         
-        setContentView(root);                                
+        setContentView(root);                         
+        
+        detector = new SimpleGestureFilter(this,this);                               
     } 
         	
 	@Override
@@ -364,12 +436,14 @@ public class DroidGap extends Activity {
     }
 		
 	}
-	
+
+ /*		
   public boolean onTouchEvent (MotionEvent ev)  {
     Log.d(LOG_TAG, "onTouchEvent " + ev.toString());    
     return ev.getAction() == 2;
   }
-  
+  */   
+      
   public boolean onTrackballEvent (MotionEvent ev){
     Log.d(LOG_TAG, "onTrackballEvent " + ev.toString());
     return false;
