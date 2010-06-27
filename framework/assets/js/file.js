@@ -129,7 +129,7 @@ FileMgr.prototype.readLogs = function(){
 }     
 
 FileMgr.prototype.uuid = function(){
-  return FileUtil.uuid();
+  return "" + FileUtil.uuid();
 }
        
 FileMgr.prototype.readFile = function(fileName)
