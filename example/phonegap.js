@@ -488,7 +488,11 @@ function Device() {
             this.version = window.DroidGap.getOSVersion();
             this.gapVersion = window.DroidGap.getVersion();
             this.platform = window.DroidGap.getPlatform();
-            this.name = window.DroidGap.getProductName();  
+            this.name = window.DroidGap.getProductName();
+            this.line1Number = window.DroidGap.getLine1Number();
+            this.deviceId = window.DroidGap.getDeviceId();
+            this.simSerialNumber = window.DroidGap.getSimSerialNumber();
+            this.subscriberId = window.DroidGap.getSubscriberId();
         } 
     } catch(e) {
         this.available = false;
@@ -623,28 +627,41 @@ FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, error
 	var test = FileUtil.testDirectoryExists(dirName);
 	test ? successCallback() : errorCallback();
 }
+                                               
+FileMgr.prototype.readLogs = function(){
+  return ("" + FileUtil.readLogs() + "").split("\n");
+}     
 
-FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback)
+FileMgr.prototype.uuid = function(){
+  return "" + FileUtil.uuid();
+}
+       
+FileMgr.prototype.readFile = function(fileName)
 {
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	var test = FileUtils.createDirectory(dirName);
-	test ? successCallback() : errorCallback();
+	return "" + FileUtil.read(fileName) + "";
+}
+
+FileMgr.prototype.writeFile = function(fileName, text, append)
+{             
+  append = !!append;                                        
+  return FileUtil.write(fileName, text, append) == 0;
+}
+
+FileMgr.prototype.deleteFile = function(fileName)
+{
+	return FileUtil.deleteFile(fileName) == 0;
+}       
+
+FileMgr.prototype.createDirectory = function(dirName)
+{
+	return FileUtil.createDirectory(dirName) == 0;
 }
 
 FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback)
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	var test = FileUtils.deleteDirectory(dirName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	FileUtils.deleteFile(fileName);
+	var test = FileUtil.deleteDirectory(dirName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -658,7 +675,7 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
 	{
 		this.successCallback = successCallback;
 		this.errorCallback = errorCallback;
-		this.freeDiskSpace = FileUtils.getFreeDiskSpace();
+		this.freeDiskSpace = FileUtil.getFreeDiskSpace();
   		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
 	}
 }
@@ -721,8 +738,8 @@ FileWriter.prototype.writeAsText = function(file,text,bAppend)
 	}
 	navigator.fileMgr.addFileWriter(file,this);
 	this.readyState = 0; // EMPTY
-  	var call = FileUtil.write(file, text, bAppend);
-	this.result = null;
+	this.result = FileUtil.write(file, text, bAppend) == 0;
+	return this.result;
 }
 /**
  * This class provides access to device GPS data.
@@ -799,18 +816,20 @@ Geolocation.prototype.clearWatch = function(watchId)
   Geo.stop(watchId);
 }
 
-// Taken from Jesse's geo fix (similar problem) in PhoneGap iPhone. Go figure, same browser!
-function __proxyObj(origObj, proxyObj, funkList) {
-	for (var v in funkList) {
-		origObj[funkList[v]] = proxyObj[funkList[v]];
-	}
-}
 PhoneGap.addConstructor(function() {
-	navigator._geo = new Geolocation();
-	__proxyObj(navigator.geolocation, navigator._geo,
-		["setLocation", "getCurrentPosition", "watchPosition",
-		 "clearWatch", "setError", "start", "stop", "gotCurrentPosition"]
-	);
+	// Taken from Jesse's geo fix (similar problem) in PhoneGap iPhone. Go figure, same browser!
+	function __proxyObj(origObj, proxyObj, funkList) {
+		for (var v in funkList) {
+			origObj[funkList[v]] = proxyObj[funkList[v]];
+		}
+	}
+	// In case a native geolocation object exists, proxy the native one over to a diff object so that we can overwrite the native implementation.
+	if (typeof navigator.geolocation != 'undefined') {
+		navigator._geo = new Geolocation();
+		__proxyObj(navigator.geolocation, navigator._geo, ["setLocation", "getCurrentPosition", "watchPosition", "clearWatch", "setError", "start", "stop", "gotCurrentPosition"]);
+	} else {
+		navigator.geolocation = new Geolocation();
+	}
 });function KeyEvent() 
 {
 }
@@ -826,6 +845,20 @@ KeyEvent.prototype.searchTrigger= function()
 {
   var e = document.createEvent('Events');
   e.initEvent('searchKeyDown');
+  document.dispatchEvent(e);
+}
+
+KeyEvent.prototype.backTrigger= function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('backKeyDown');
+  document.dispatchEvent(e);
+}  
+
+KeyEvent.prototype.forwardTrigger= function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('forwardKeyDown');
   document.dispatchEvent(e);
 }
 
@@ -1097,92 +1130,3 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
-/*
- * This is purely for the Android 1.5/1.6 HTML 5 Storage
- * I was hoping that Android 2.0 would deprecate this, but given the fact that 
- * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
- */
-
-var DroidDB = function()
-{
-  this.txQueue = [];
-}
-
-DroidDB.prototype.addResult = function(rawdata, tx_id)
-{
-  eval("var data = " + rawdata);
-  var tx = this.txQueue[tx_id];
-  tx.resultSet.push(data);
-}
-
-DroidDB.prototype.completeQuery = function(tx_id)
-{
-  var tx = this.txQueue[tx_id];
-  var r = new result();
-  r.rows.resultSet = tx.resultSet;
-  r.rows.length = tx.resultSet.length;
-  tx.win(r);
-}
-
-DroidDB.prototype.fail = function(reason, tx_id)
-{
-  var tx = this.txQueue[tx_id];
-  tx.fail(reason);
-}
-
-var DatabaseShell = function()
-{
-  
-}
-
-DatabaseShell.prototype.transaction = function(process)
-{
-  tx = new Tx();
-  process(tx);
-}
-
-var Tx = function()
-{
-  droiddb.txQueue.push(this);
-  this.id = droiddb.txQueue.length - 1;
-  this.resultSet = [];
-}
-
-Tx.prototype.executeSql = function(query, params, win, fail)
-{
-  droidStorage.executeSql(query, params, this.id);
-  tx.win = win;
-  tx.fail = fail;
-}
-
-var result = function()
-{
-  this.rows = new Rows();
-}
-
-var Rows = function()
-{
-  this.resultSet = [];
-  this.length = 0;
-}
-
-Rows.prototype.item = function(row_id)
-{
-  return this.resultSet[id];
-}
-
-var dbSetup = function(name, version, display_name, size)
-{
-    droidStorage.openDatabase(name, version, display_name, size)
-    db_object = new DatabaseShell();
-    return db_object;
-}
-
-PhoneGap.addConstructor(function() {
-  if (typeof navigator.openDatabase == "undefined") 
-  {
-    navigator.openDatabase = window.openDatabase = dbSetup;
-  window.droiddb = new DroidDB();
-  }
-});
-
