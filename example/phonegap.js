@@ -139,20 +139,11 @@ function Acceleration(x, y, z)
   this.y = y;
   this.z = z;
   this.timestamp = new Date().getTime();
+  this.win = null;
+  this.fail = null;
 }
 
-// Need to define these for android
-_accel = {};
-_accel.x = 0;
-_accel.y = 0;
-_accel.z = 0;
-
-function gotAccel(x, y, z)
-{
-	_accel.x = x;
-	_accel.y = y;
-	_accel.z = z;
-}
+var accelListeners = [];
 
 /**
  * This class provides access to device accelerometer data.
@@ -180,11 +171,33 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 
 	// Created for iPhone, Iphone passes back _accel obj litteral
 	if (typeof successCallback == "function") {
-		var accel = new Acceleration(_accel.x,_accel.y,_accel.z);
-		Accelerometer.lastAcceleration = accel;
-		successCallback(accel);
+		if(this.lastAcceleration)
+		  successCallback(accel);
+		else
+		{
+			watchAcceleration(this.gotCurrentAcceleration, this.fail);
+		}
 	}
 }
+
+
+Accelerometer.prototype.gotAccel = function(key, x, y, z)
+{
+	console.log('we won');
+    var a = new Acceleration(x,y,z);
+    a.x = x;
+    a.y = y;
+    a.x = z;
+    a.win = accelListeners[key].win;
+    a.fail = accelListeners[key].fail;
+    this.timestamp = new Date().getTime();
+    this.lastAcceleration = a;
+    accelListeners[key] = a;
+    if (typeof a.win == "function") {
+      a.win(a);
+    }
+}
+
 
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
@@ -198,12 +211,13 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
 	// TODO: add the interval id to a list so we can clear all watches
- 	var frequency = (options != undefined)? options.frequency : 10000;
-	
-	Accel.start(frequency);
-	return setInterval(function() {
-		navigator.accelerometer.getCurrentAcceleration(successCallback, errorCallback, options);
-	}, frequency);
+  var frequency = (options != undefined)? options.frequency : 10000;
+  var accel = Acceleration(0,0,0);
+  accel.win = successCallback;
+  accel.fail = errorCallback;
+  accel.opts = options;
+  var key = accelListeners.push( accel ) - 1;
+  Accel.start(frequency, key);
 }
 
 /**
@@ -211,8 +225,11 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
  * @param {String} watchId The ID of the watch returned from #watchAcceleration.
  */
 Accelerometer.prototype.clearWatch = function(watchId) {
-	Accel.stop();
-	clearInterval(watchId);
+	Accel.stop(watchId);
+}
+
+Accelerometer.prototype.epicFail = function(watchId, message) {
+  accelWatcher[key].fail();
 }
 
 PhoneGap.addConstructor(function() {
@@ -286,7 +303,7 @@ function Compass() {
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
 	if (this.lastHeading == null) {
-		this.start(options);
+		CompassHook.start();
 	}
 	else 
 	if (typeof successCallback == "function") {
@@ -497,6 +514,32 @@ function Device() {
     } catch(e) {
         this.available = false;
     }
+}
+
+/*
+ * You must explicitly override the back button. 
+ */
+
+Device.prototype.overrideBackButton = function()
+{
+  BackButton.override();
+}
+
+/*
+ * This resets the back button to the default behaviour
+ */
+
+Device.prototype.resetBackButton = function()
+{
+  BackButton.reset();
+}
+
+/*
+ * This terminates the activity!
+ */
+Device.prototype.exitApp = function()
+{
+  BackButton.exitApp();
 }
 
 PhoneGap.addConstructor(function() {
@@ -834,17 +877,10 @@ PhoneGap.addConstructor(function() {
 {
 }
 
-KeyEvent.prototype.menuTrigger = function()
+KeyEvent.prototype.backTrigger = function()
 {
   var e = document.createEvent('Events');
-  e.initEvent('menuKeyDown');
-  document.dispatchEvent(e);
-}
-
-KeyEvent.prototype.searchTrigger= function()
-{
-  var e = document.createEvent('Events');
-  e.initEvent('searchKeyDown');
+  e.initEvent('backKeyDown');
   document.dispatchEvent(e);
 }
 
@@ -859,6 +895,13 @@ KeyEvent.prototype.forwardTrigger= function()
 {
   var e = document.createEvent('Events');
   e.initEvent('forwardKeyDown');
+  document.dispatchEvent(e);
+}
+
+KeyEvent.prototype.searchTrigger= function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('searchKeyDown');
   document.dispatchEvent(e);
 }
 
@@ -912,19 +955,19 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  */
 
 Media.prototype.play = function() {
-  DroidGap.startPlayingAudio(this.src);  
+  GapAudio.startPlayingAudio(this.src);  
 }
 
 Media.prototype.stop = function() {
-  DroidGap.stopPlayingAudio();
+  GapAudio.stopPlayingAudio();
 }
 
 Media.prototype.startRecord = function() {
-  DroidGap.startRecordingAudio(this.src);
+  GapAudio.startRecordingAudio(this.src);
 }
 
 Media.prototype.stopRecordingAudio = function() {
-  DroidGap.stopRecordingAudio();
+  GapAudio.stopRecordingAudio();
 }
 
 
@@ -1130,3 +1173,626 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof window.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+    window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof window.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+    window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof window.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+    window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof navigator.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+  window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof navigator.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+  window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof window.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+    window.droiddb = new DroidDB();
+  }
+});
+
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof window.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+    window.droiddb = new DroidDB();
+  }
+});
+

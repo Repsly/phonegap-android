@@ -23,15 +23,20 @@ package com.phonegap;
  */
 
 
+import java.io.File;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -49,7 +54,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
-import android.os.Build.*;  
+import android.os.Build.*;
+import android.provider.MediaStore;
 
 import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
 
@@ -105,9 +111,9 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 	protected WebView appView;
 	private LinearLayout root;	
 	
-	private PhoneGap gap;
+	private Device gap;
 	private GeoBroker geo;
-	private AccelListener accel;
+	private AccelBroker accel;
 	private CameraLauncher launcher;
 	private ContactManager mContacts;
 	private FileUtils fs;
@@ -115,6 +121,10 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 	private CompassListener mCompass;
 	private Storage	cupcakeStorage;
 	private CryptoHandler crypto;
+	private BrowserKey mKey;
+	private AudioHandler audio;
+
+	private Uri imageUri;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -220,15 +230,17 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
     
     private void bindBrowser(WebView appView)
     {
-    	gap = new PhoneGap(this, appView);
+    	gap = new Device(appView, this);
     	geo = new GeoBroker(appView, this);
-    	accel = new AccelListener(this, appView);
+    	accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
-    	mContacts = new ContactManager(this, appView);
-    	fs = new FileUtils(appView); 
-    	netMan = new NetworkManager(this, appView);
-    	mCompass = new CompassListener(this, appView);  
+    	mContacts = new ContactManager(appView, this);
+    	fs = new FileUtils(appView);
+    	netMan = new NetworkManager(appView, this);
+    	mCompass = new CompassListener(appView, this);  
     	crypto = new CryptoHandler(appView);
+    	mKey = new BrowserKey(appView, this);
+    	audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -240,6 +252,8 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     	appView.addJavascriptInterface(crypto, "GapCrypto");
+    	appView.addJavascriptInterface(mKey, "BackButton");
+    	appView.addJavascriptInterface(audio, "GapAudio");
     	
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
@@ -301,8 +315,16 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 	    	else if(url.startsWith("file:///android_asset/www/index.html")){
 	    	  return false;
 	    	}
+	    	else if(url.startsWith("mailto:"))
+	    	{
+	    		Intent mail = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+	    		startActivity(mail);
+	    		return true;
+	    	}
 	    	else
 	    	{
+	    		//We clear the back button state
+	    		mKey.reset();
 	    		view.loadUrl(url);
 	    		return false;
 	    	}
@@ -330,10 +352,10 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 	        GapOKDialog okHook = new GapOKDialog();
 	        GapCancelDialog cancelHook = new GapCancelDialog();
 	        alertBldr.setMessage(message);
-	        alertBldr.setTitle("Alert");
+	        alertBldr.setTitle("Upozorenje");
 	        alertBldr.setCancelable(true);
 	        alertBldr.setPositiveButton("OK", okHook);
-	        alertBldr.setNegativeButton("Cancel", cancelHook);
+	        //alertBldr.setNegativeButton("Cancel", cancelHook);
 	        alertBldr.show();
 	        result.confirm();
 	        return true;
@@ -344,8 +366,8 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
       public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) 
       {
           new AlertDialog.Builder(mCtx)
-              .setTitle(message)
-              //.setMessage(message)
+              .setTitle("Provjera")
+              .setMessage(message)
               .setPositiveButton("Da", //android.R.string.ok, 
                       new DialogInterface.OnClickListener() 
                       {
@@ -395,7 +417,7 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 	
 	public final class EclairClient extends GapClient
 	{		
-		private String TAG = "PhoneGapClientLog";
+		private String TAG = "PhoneGapLog";
 		private long MAX_QUOTA = 100 * 1024 * 1024;
 		
 		public EclairClient(Context ctx) {
@@ -422,17 +444,11 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 		    		quotaUpdater.updateQuota(currentQuota);
 		    	}		    	
 		}		
-		
-		// This is a test of console.log, because we don't have this in Android 2.01
-		public void addMessageToConsole(String message, int lineNumber, String sourceID)
-		{
-			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);
-		}
-		                    
+		                    		                    
 		// console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
     public void onConsoleMessage(String message, int lineNumber, String sourceID)
     {                  
-      Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+      Log.d("PhoneGapClientLog", sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
     }
 		
 	}
@@ -474,28 +490,36 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
       return false;
   }
     // This is required to start the camera activity!  It has to come from the previous activity
-    public void startCamera(int quality)
+    public void startCamera()
     {
-    Intent i = new Intent(this, CameraPreview.class);
-    	i.setAction("android.intent.action.PICK");
-    	i.putExtra("quality", quality);
-    	startActivityForResult(i, 0);
+    	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                Uri.fromFile(photo));
+        imageUri = Uri.fromFile(photo);
+        startActivityForResult(intent, 0);
     }
     
     protected void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
-    	String data;
-    	super.onActivityResult(requestCode, resultCode, intent);
-    	if (resultCode == RESULT_OK)
-    	{
-    		data = intent.getStringExtra("picture");    	     
-    		// Send the graphic back to the class that needs it
-    		launcher.processPicture(data);
-    	}
-    	else
-    	{
-    		launcher.failPicture("Did not complete!");
-    	}
+    	   super.onActivityResult(requestCode, resultCode, intent);
+    	   
+    	   if (resultCode == Activity.RESULT_OK) {
+    		   Uri selectedImage = imageUri;
+    	       getContentResolver().notifyChange(selectedImage, null);
+    	       ContentResolver cr = getContentResolver();
+    	       Bitmap bitmap;
+    	       try {
+    	            bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
+    	            launcher.processPicture(bitmap);
+    	       } catch (Exception e) {
+    	    	   launcher.failPicture("Did not complete!");
+    	       }
+    	    }
+    	   else
+    	   {
+    		   launcher.failPicture("Did not complete!");
+    	   }
     }
 
     public WebView getView()

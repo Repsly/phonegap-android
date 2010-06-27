@@ -101,6 +101,7 @@ class Build
 
     Dir.new(js_dir).entries.each do |script|
       next if script[0].chr == "." or script == "phonegap.js.base"
+      next if script.include?("storage.js")
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
