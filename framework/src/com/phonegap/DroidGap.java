@@ -477,7 +477,8 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 
       if (keyCode == KeyEvent.KEYCODE_MENU) 
       {
-        appView.loadUrl("file:///android_asset/www/index.html");//"javascript:keyEvent.menuTrigger()");
+        //appView.loadUrl("file:///android_asset/www/index.html");//"
+        appView.loadUrl("javascript:keyEvent.menuTrigger()");
         return true;
       }
 

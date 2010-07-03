@@ -2,10 +2,10 @@ function KeyEvent()
 {
 }
 
-KeyEvent.prototype.backTrigger = function()
+KeyEvent.prototype.menuTrigger = function()
 {
   var e = document.createEvent('Events');
-  e.initEvent('backKeyDown');
+  e.initEvent('menuKeyDown');
   document.dispatchEvent(e);
 }
 
