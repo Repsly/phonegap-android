@@ -64,8 +64,9 @@ Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, 
 }
 
 Geolocation.prototype.fail = function(key)
-{
-  geoListeners[key].fail();
+{       
+  if (geoListeners && geoListeners[key])
+    geoListeners[key].fail();
 }
  
 Geolocation.prototype.clearWatch = function(watchId)

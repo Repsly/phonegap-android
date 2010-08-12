@@ -129,10 +129,10 @@ public class FileUtils {
 		return 0;
     }
     
-    public String readLogs(){ // ArrayList<String>... params)
+    public String readLogs(){
       try{             
         StringBuilder log = new StringBuilder();                    
-        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapClientLog:V PhoneGapDroidGap:I PhoneGapFileUtils:I PhoneGap:I PhoneGapSQLiteStorage:I *:S");// commandLine.toArray(new String[0]));
+        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapClientLog:V PhoneGapDroidGap:I PhoneGapFileUtils:I PhoneGap:I PhoneGapSQLiteStorage:I *:S");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;

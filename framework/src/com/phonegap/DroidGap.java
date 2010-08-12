@@ -57,54 +57,56 @@ import android.widget.LinearLayout;
 import android.os.Build.*;
 import android.provider.MediaStore;
 
-import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
+//import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
 
 
-public class DroidGap extends Activity  implements SimpleGestureListener {    
+public class DroidGap extends Activity  { //implements SimpleGestureListener {    
   
   
-      /*-------------------*/
-      private SimpleGestureFilter detector;
+      /*-------------------*/             
       
-      @Override 
-      public boolean dispatchTouchEvent(MotionEvent me){ 
-        this.detector.onTouchEvent(me);
-        return super.dispatchTouchEvent(me); 
-      }
-
-      //@Override
-      public void onSwipe(int direction) {
-       String str = "";
-
-       switch (direction) {
-
-       case SimpleGestureFilter.SWIPE_RIGHT : 
-          str = "Swipe Right";
-          appView.loadUrl("javascript:keyEvent.backTrigger()");
-          break;
-       case SimpleGestureFilter.SWIPE_LEFT :  
-          str = "Swipe Left";
-          appView.loadUrl("javascript:keyEvent.forwardTrigger()"); 
-          break;
-       case SimpleGestureFilter.SWIPE_DOWN :  
-          str = "Swipe Down";
-          appView.pageUp(false);
-          break;
-       case SimpleGestureFilter.SWIPE_UP :    
-          str = "Swipe Up";
-          appView.pageDown(false);
-          break;
-
-       } 
-       Log.d(LOG_TAG, "---onSwipe---- :: " + str);
-        //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-      }
-
-      //@Override
-      public void onDoubleTap() {
-      	Log.d(LOG_TAG, "---onDoubleTap----");
-         //Toast.makeText(this, "Double Tap", Toast.LENGTH_SHORT).show(); 
-      }
+      // private SimpleGestureFilter detector;
+      // 
+      // @Override 
+      // public boolean dispatchTouchEvent(MotionEvent me){ 
+      //   this.detector.onTouchEvent(me);
+      //   return super.dispatchTouchEvent(me); 
+      // }
+      //        
+      // 
+      // @Override
+      // public void onSwipe(int direction) {
+      //  String str = "";
+      // 
+      //  switch (direction) {
+      // 
+      //  case SimpleGestureFilter.SWIPE_RIGHT : 
+      //     str = "Swipe Right";
+      //     appView.loadUrl("javascript:keyEvent.backTrigger()");
+      //     break;
+      //  case SimpleGestureFilter.SWIPE_LEFT :  
+      //     str = "Swipe Left";
+      //     appView.loadUrl("javascript:keyEvent.forwardTrigger()"); 
+      //     break;
+      //  case SimpleGestureFilter.SWIPE_DOWN :  
+      //     str = "Swipe Down";
+      //     appView.pageUp(false);
+      //     break;
+      //  case SimpleGestureFilter.SWIPE_UP :    
+      //     str = "Swipe Up";
+      //     appView.pageDown(false);
+      //     break;
+      // 
+      //  } 
+      //  Log.d(LOG_TAG, "---onSwipe---- :: " + str);
+      //   //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+      // }
+      // 
+      // //@Override
+      // public void onDoubleTap() {
+      //  Log.d(LOG_TAG, "---onDoubleTap----");
+      //    //Toast.makeText(this, "Double Tap", Toast.LENGTH_SHORT).show(); 
+      // }  
       /*---------------------------*/
   	
 	private static final String LOG_TAG = "PhoneGapDroidGap";
@@ -149,31 +151,55 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
         //appView = new WebView(this);
                 
         appView = (new WebView(this){     
-          //private float lastMoveY;
-          
-          private long lastDownEvent = 0;
+                    
+          private long lastDownEvent = 0;    
+          private float lastDownY = 0; 
+          private float lastDownX = 0;
           
           @Override           
           public boolean onTouchEvent(MotionEvent me) {              
+            
                                     
             if (me.getAction() == 0){
               lastDownEvent = System.currentTimeMillis();
+              lastDownY = me.getY();
+              lastDownX = me.getX();
             }
-            if (me.getAction() == 2 && System.currentTimeMillis() - lastDownEvent > 300){
-              me.setAction(0);
-              lastDownEvent = System.currentTimeMillis() - 200;
-            }
+            if (me.getAction() == 2){
+              boolean blizuZadnjegDown = Math.abs(me.getY() - lastDownY) < 20 &&  Math.abs(me.getX() - lastDownX) < 20;              
+              if (blizuZadnjegDown){              
+                if (System.currentTimeMillis() - lastDownEvent > 300){
+                  me.setAction(0);
+                  lastDownEvent = System.currentTimeMillis() - 200;
+                }                                                                                   
+              }
+            }      
             
+            
+            /*
+            if (me.getAction() == 2 && Math.abs(me.getY() - lastDownY) / Math.abs(me.getX() - lastDownX) < 1){
+              Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
+            }else{
+              Log.d(LOG_TAG, "onTouchEvent + " + me.toString());
+              super.onTouchEvent(me);              
+            }
+            */ 
+            
+            
+            /*
             if (me.getAction() < 2 || me.getAction() == 3){                                
               Log.d(LOG_TAG, "onTouchEvent + " + me.toString()); 
-              super.onTouchEvent(me);
-            	//lastMoveY = me.getY();
+              super.onTouchEvent(me);          
             }else{
               Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
-            }
+            }                                  
             return true;                
+            */
+            super.onTouchEvent(me); 
+            return true;
           }
-        }); 
+        });  
+         
                 
         appView.setLayoutParams(webviewParams);
         
@@ -199,7 +225,8 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
         
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
-        settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
+        settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);   
+        //settings.setBuiltInZoomControls(true);
 
         Package pack = this.getClass().getPackage();
         String appPackage = pack.getName();
@@ -219,7 +246,7 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
         
         setContentView(root);                         
         
-        detector = new SimpleGestureFilter(this,this);                               
+        //detector = new SimpleGestureFilter(this,this);                               
     } 
         	
 	@Override
@@ -453,13 +480,12 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 		
 	}
 
- /*		
+  /*		
   public boolean onTouchEvent (MotionEvent ev)  {
-    Log.d(LOG_TAG, "onTouchEvent " + ev.toString());    
-    return ev.getAction() == 2;
-  }
-  */   
-      
+    Log.d(LOG_TAG, "onTouchEvent 2 " + ev.toString());    
+    return false; //ev.getAction() == 2;
+  }    
+  */    
   public boolean onTrackballEvent (MotionEvent ev){
     Log.d(LOG_TAG, "onTrackballEvent " + ev.toString());
     return false;
@@ -477,8 +503,8 @@ public class DroidGap extends Activity  implements SimpleGestureListener {
 
       if (keyCode == KeyEvent.KEYCODE_MENU) 
       {
-        //appView.loadUrl("file:///android_asset/www/index.html");//"
-        appView.loadUrl("javascript:keyEvent.menuTrigger()");
+        appView.loadUrl("file:///android_asset/www/index.html");//"
+        //appView.loadUrl("javascript:keyEvent.menuTrigger()");
         return true;
       }
 
