@@ -55,7 +55,10 @@ import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
 import android.os.Build.*;
-import android.provider.MediaStore;
+import android.provider.MediaStore;  
+
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 //import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
 
@@ -128,38 +131,66 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
 
 	private Uri imageUri;
 	
-    /** Called when the activity is first created. */
-	@Override
-    public void onCreate(Bundle savedInstanceState) {
+	private boolean startingCamera = false;
+	
+    @Override      
+    public void onPause() { 
+      if (!this.startingCamera){  
+        appView.loadUrl("javascript:sp.android.onPause();");
+      }
+      super.onPause();    
+        
+      //appView.loadUrl("about:blank");
+      Log.d(LOG_TAG, "onPause");
+    }
+    @Override      
+    public void onResume() { 
+      super.onResume();
+      if (!this.startingCamera){                                   
+        appView.loadUrl("javascript:if (sp && sp.android) { sp.android.onResume() };");  
+        //appView.loadUrl("file:///android_asset/www/splash.html");
+      }    
+      this.startingCamera = false;
+      Log.d(LOG_TAG, "onResume");
+    }
+
+     /** Called when the activity is first created. */
+    @Override      
+    public void onCreate(Bundle savedInstanceState) {   
+        Log.d(LOG_TAG, "onCreate");
+        
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE); 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); 
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
-        
-        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
+        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!        
+        // LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        //          ViewGroup.LayoutParams.FILL_PARENT, 0.0F);     
          
         LinearLayout.LayoutParams webviewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-        		ViewGroup.LayoutParams.FILL_PARENT, 1.0F);
+            ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
+                    		
         
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.BLACK);
-        root.setLayoutParams(containerParams);
-                                    
-        //appView = new WebView(this);
-                
+        // root = new LinearLayout(this);           
+        // root.setOrientation(LinearLayout.VERTICAL);
+        // root.setBackgroundColor(Color.BLACK);
+        // root.setLayoutParams(containerParams);
+           
+        //umjesto donje kontrole dodao ovo:                         
+        //appView = new WebView(this);        
+                                        
         appView = (new WebView(this){     
                     
           private long lastDownEvent = 0;    
           private float lastDownY = 0; 
           private float lastDownX = 0;
+          private boolean isFroyo = android.os.Build.VERSION.RELEASE.startsWith("2.2");
           
           @Override           
-          public boolean onTouchEvent(MotionEvent me) {              
+          public boolean onTouchEvent(MotionEvent me) {                          
             
-                                    
+            //Log.d(LOG_TAG, "onTouchEvent " + me.toString() + (isFroyo ? " Froyo" : " nije Froyo") + " version: " + android.os.Build.VERSION.RELEASE );
+                        
             if (me.getAction() == 0){
               lastDownEvent = System.currentTimeMillis();
               lastDownY = me.getY();
@@ -174,33 +205,24 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
                 }                                                                                   
               }
             }      
-            
-            
-            /*
-            if (me.getAction() == 2 && Math.abs(me.getY() - lastDownY) / Math.abs(me.getX() - lastDownX) < 1){
-              Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
+
+            if (!isFroyo){
+              if (me.getAction() == 2 && Math.abs(me.getY() - lastDownY) / Math.abs(me.getX() - lastDownX) < 1){
+                //Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
+              }else{
+                //Log.d(LOG_TAG, "onTouchEvent + " + me.toString());
+                super.onTouchEvent(me);              
+              } 
             }else{
-              Log.d(LOG_TAG, "onTouchEvent + " + me.toString());
-              super.onTouchEvent(me);              
+              super.onTouchEvent(me);
             }
-            */ 
-            
-            
-            /*
-            if (me.getAction() < 2 || me.getAction() == 3){                                
-              Log.d(LOG_TAG, "onTouchEvent + " + me.toString()); 
-              super.onTouchEvent(me);          
-            }else{
-              Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
-            }                                  
-            return true;                
-            */
-            super.onTouchEvent(me); 
+                        
             return true;
           }
-        });  
+        });
+                 
          
-                
+        //iskljucio start                       
         appView.setLayoutParams(webviewParams);
         
         WebViewReflect.checkCompatibility();
@@ -210,41 +232,50 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         }
         else
         {        
-        	appView.setWebChromeClient(new GapClient(this));
+         appView.setWebChromeClient(new GapClient(this));
         }
         
         appView.setWebViewClient(new GapViewClient(this));       
-                
-        appView.setInitialScale(100);
+                 
+        //appView.setInitialScale(100);         
         appView.setVerticalScrollBarEnabled(true);
         appView.setVerticalScrollbarOverlay(true);
         appView.setHorizontalScrollbarOverlay(true);  
-        appView.setSoundEffectsEnabled(true);
+        appView.setHorizontalScrollBarEnabled(false);
         
-        WebSettings settings = appView.getSettings();               
-        
+        appView.setSoundEffectsEnabled(true); 
+                        
+        WebSettings settings = appView.getSettings();        
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);   
-        //settings.setBuiltInZoomControls(true);
-
-        Package pack = this.getClass().getPackage();
-        String appPackage = pack.getName();
-    	
-        WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
+        settings.setBuiltInZoomControls(false);      
         
+        
+        Package pack = this.getClass().getPackage();
+        String appPackage = pack.getName();             
+        WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");        
         // Turn on DOM storage!
         WebViewReflect.setDomStorage(settings);
         // Turn off native geolocation object in browser - we use our own :)
         WebViewReflect.setGeolocationEnabled(settings, false);
-        /* Bind the appView object to the gap class methods */
+        // Bind the appView object to the gap class methods /
         bindBrowser(appView);
         if(cupcakeStorage != null)
-        	cupcakeStorage.setStorage(appPackage);
-                
-        root.addView(appView);   
-        
-        setContentView(root);                         
+          cupcakeStorage.setStorage(appPackage);     
+               
+        //iskljucio end                          
+                 
+        // // //dodao jer sam gore isljucio
+        // WebSettings settings = appView.getSettings();
+        // settings.setJavaScriptEnabled(true);
+        // 
+        // appView.setVerticalScrollbarOverlay(true);
+        // appView.setHorizontalScrollbarOverlay(true);
+                            
+        //root.addView(appView);           
+        //setContentView(root);                         
+        setContentView(appView);
         
         //detector = new SimpleGestureFilter(this,this);                               
     } 
@@ -292,7 +323,7 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
            
  
 	public void loadUrl(String url)
-	{
+	{                
 		appView.loadUrl(url);
 	}
 
@@ -518,7 +549,8 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
   }
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera()
-    {
+    {  
+      this.startingCamera = true;
     	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
         intent.putExtra(MediaStore.EXTRA_OUTPUT,

@@ -86,6 +86,11 @@ public class Device{
 	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
 	  return operator.getLine1Number();
 	}
+	   
+	public boolean isNetworkRoaming(){
+	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+	  return operator.isNetworkRoaming();
+	}
 	
 	public String getDeviceId(){
 	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
