@@ -118,16 +118,16 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
 	
 	private Device gap;
 	private GeoBroker geo;
-	private AccelBroker accel;
+  // private AccelBroker accel;
 	private CameraLauncher launcher;
-	private ContactManager mContacts;
+  // private ContactManager mContacts;
 	private FileUtils fs;
-	private NetworkManager netMan;
-	private CompassListener mCompass;
-	private Storage	cupcakeStorage;
-	private CryptoHandler crypto;
-	private BrowserKey mKey;
-	private AudioHandler audio;
+  // private NetworkManager netMan;
+  // private CompassListener mCompass;
+//	private Storage	cupcakeStorage;
+  // private CryptoHandler crypto;
+     private BrowserKey mKey;
+  // private AudioHandler audio;
 
 	private Uri imageUri;
 	
@@ -139,20 +139,42 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         appView.loadUrl("javascript:sp.android.onPause();");
       }
       super.onPause();    
-        
-      //appView.loadUrl("about:blank");
       Log.d(LOG_TAG, "onPause");
     }
     @Override      
-    public void onResume() { 
-      super.onResume();
+    public void onResume() {       
+      super.onResume();      
+      appView.resumeTimers(); 
+      /*                                  
+      try{
+        WebView.class.getMethod("onResume").invoke(appView);    		   
+      } 
+      catch (java.lang.reflect.InvocationTargetException ite) { }
+      catch (java.lang.IllegalAccessException iae) {}
+      catch (java.lang.NoSuchMethodException nsm) {}
+      */        
       if (!this.startingCamera){                                   
-        appView.loadUrl("javascript:if (sp && sp.android) { sp.android.onResume() };");  
-        //appView.loadUrl("file:///android_asset/www/splash.html");
+        appView.loadUrl("javascript:if ((typeof(sp) != 'undefined') && sp.android) { sp.android.onResume() };");
       }    
       this.startingCamera = false;
       Log.d(LOG_TAG, "onResume");
+    } 
+    public void onStop() {      
+      super.onStop();  
+      Log.d(LOG_TAG, "onStop");
+    } 
+    public void onStart() {      
+      super.onStart();    
+      Log.d(LOG_TAG, "onStart");
     }
+    public void onRestart() {      
+      super.onRestart();    
+      Log.d(LOG_TAG, "onRestart");
+    }
+    public void onDestroy() {      
+      super.onDestroy();    
+      Log.d(LOG_TAG, "onDestroy");
+    } 
 
      /** Called when the activity is first created. */
     @Override      
@@ -177,36 +199,44 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         // root.setLayoutParams(containerParams);
            
         //umjesto donje kontrole dodao ovo:                         
-        //appView = new WebView(this);        
-                                        
+        
+        appView = new WebView(this);        
+        
+        
+        /*                                
         appView = (new WebView(this){     
                     
           private long lastDownEvent = 0;    
           private float lastDownY = 0; 
           private float lastDownX = 0;
           private boolean isFroyo = android.os.Build.VERSION.RELEASE.startsWith("2.2");
+          private boolean isEclair = android.os.Build.VERSION.RELEASE.startsWith("2.1");
           
           @Override           
           public boolean onTouchEvent(MotionEvent me) {                          
             
-            //Log.d(LOG_TAG, "onTouchEvent " + me.toString() + (isFroyo ? " Froyo" : " nije Froyo") + " version: " + android.os.Build.VERSION.RELEASE );
-                        
-            if (me.getAction() == 0){
-              lastDownEvent = System.currentTimeMillis();
-              lastDownY = me.getY();
-              lastDownX = me.getX();
-            }
-            if (me.getAction() == 2){
-              boolean blizuZadnjegDown = Math.abs(me.getY() - lastDownY) < 20 &&  Math.abs(me.getX() - lastDownX) < 20;              
-              if (blizuZadnjegDown){              
-                if (System.currentTimeMillis() - lastDownEvent > 300){
-                  me.setAction(0);
-                  lastDownEvent = System.currentTimeMillis() - 200;
-                }                                                                                   
+            Log.d(LOG_TAG, "onTouchEvent " + me.toString() + (isEclair ? " Eclair" : " nije Eclair") + " version: " + android.os.Build.VERSION.RELEASE );
+            
+            if (isEclair){
+                          
+              if (me.getAction() == 0){
+                lastDownEvent = System.currentTimeMillis();
+                lastDownY = me.getY();
+                lastDownX = me.getX();
               }
-            }      
-
-            if (!isFroyo){
+              if (me.getAction() == 2){
+                boolean blizuZadnjegDown = Math.abs(me.getY() - lastDownY) < 20 &&  Math.abs(me.getX() - lastDownX) < 20;              
+                if (blizuZadnjegDown){              
+                  if (System.currentTimeMillis() - lastDownEvent > 300){
+                    Log.d(LOG_TAG, "onTouchEvent changing action 2 --> 0");
+                    me.setAction(0);
+                    lastDownEvent = System.currentTimeMillis() - 200;
+                  }                                                                                   
+                }
+              }      
+            }        
+            
+            if (isEclair){
               if (me.getAction() == 2 && Math.abs(me.getY() - lastDownY) / Math.abs(me.getX() - lastDownX) < 1){
                 //Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
               }else{
@@ -219,7 +249,8 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
                         
             return true;
           }
-        });
+        });              
+        */
                  
          
         //iskljucio start                       
@@ -261,8 +292,8 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         WebViewReflect.setGeolocationEnabled(settings, false);
         // Bind the appView object to the gap class methods /
         bindBrowser(appView);
-        if(cupcakeStorage != null)
-          cupcakeStorage.setStorage(appPackage);     
+        // if(cupcakeStorage != null)
+        //   cupcakeStorage.setStorage(appPackage);     
                
         //iskljucio end                          
                  
@@ -290,35 +321,35 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
     {
     	gap = new Device(appView, this);
     	geo = new GeoBroker(appView, this);
-    	accel = new AccelBroker(appView, this);
+      // accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
-    	mContacts = new ContactManager(appView, this);
+      // mContacts = new ContactManager(appView, this);
     	fs = new FileUtils(appView);
-    	netMan = new NetworkManager(appView, this);
-    	mCompass = new CompassListener(appView, this);  
-    	crypto = new CryptoHandler(appView);
-    	mKey = new BrowserKey(appView, this);
-    	audio = new AudioHandler(appView, this);
+      // netMan = new NetworkManager(appView, this);
+      // mCompass = new CompassListener(appView, this);  
+      // crypto = new CryptoHandler(appView);
+      mKey = new BrowserKey(appView, this);
+      // audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(geo, "Geo");
-    	appView.addJavascriptInterface(accel, "Accel");
+      // appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
-    	appView.addJavascriptInterface(mContacts, "ContactHook");
+      // appView.addJavascriptInterface(mContacts, "ContactHook");
     	appView.addJavascriptInterface(fs, "FileUtil");
-    	appView.addJavascriptInterface(netMan, "NetworkManager");
-    	appView.addJavascriptInterface(mCompass, "CompassHook");
-    	appView.addJavascriptInterface(crypto, "GapCrypto");
-    	appView.addJavascriptInterface(mKey, "BackButton");
-    	appView.addJavascriptInterface(audio, "GapAudio");
+      // appView.addJavascriptInterface(netMan, "NetworkManager");
+      // appView.addJavascriptInterface(mCompass, "CompassHook");
+      // appView.addJavascriptInterface(crypto, "GapCrypto");
+      appView.addJavascriptInterface(mKey, "BackButton");
+      // appView.addJavascriptInterface(audio, "GapAudio");
     	
     	
-    	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
-    	{
-    		cupcakeStorage = new Storage(appView);
-    		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
-    	}
+      // if (android.os.Build.VERSION.RELEASE.startsWith("1."))
+      // {
+      //  cupcakeStorage = new Storage(appView);
+      //  appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
+      // }  
     }
            
  
@@ -486,12 +517,15 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
 		public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
 		    	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
 		{
-		  Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));  	
+		  Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + 
+		    " currentQuota: " + Long.toString(currentQuota) + 
+		    " totalUsedQuota: " + Long.toString(totalUsedQuota)
+		    );  	
 		  
 			if( estimatedSize < MAX_QUOTA)
 		    	{	                                        
 		    	  //increase for 1Mb        		    	  		    	  
-		    		long newQuota = currentQuota + 1024*1024;		    		
+		    		long newQuota = estimatedSize; //currentQuota + 1024*1024;		    		
 		    		Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );  	
 		    		quotaUpdater.updateQuota(newQuota);
 		    	}
@@ -533,14 +567,16 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
       }
 
       if (keyCode == KeyEvent.KEYCODE_MENU) 
-      {
-        appView.loadUrl("file:///android_asset/www/index.html");//"
+      {                                     
+        //appView.reload();
+        appView.loadUrl("file:///android_asset/www/index.html");
         //appView.loadUrl("javascript:keyEvent.menuTrigger()");
         return true;
       }
 
       if (keyCode == KeyEvent.KEYCODE_SEARCH) 
-      {
+      {                                     
+        appView.refreshDrawableState();
         appView.loadUrl("javascript:keyEvent.searchTrigger()");
         return true;
       }
