@@ -123,34 +123,13 @@ FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, error
 	var test = FileUtil.testDirectoryExists(dirName);
 	test ? successCallback() : errorCallback();
 }
-                                               
-FileMgr.prototype.readLogs = function(){
-  return ("" + FileUtil.readLogs() + "").split("\n");
-}     
 
-FileMgr.prototype.uuid = function(){
-  return "" + FileUtil.uuid();
-}
-       
-FileMgr.prototype.readFile = function(fileName)
+FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback)
 {
-	return "" + FileUtil.read(fileName) + "";
-}
-
-FileMgr.prototype.writeFile = function(fileName, text, append)
-{             
-  append = !!append;                                        
-  return FileUtil.write(fileName, text, append) == 0;
-}
-
-FileMgr.prototype.deleteFile = function(fileName)
-{
-	return FileUtil.deleteFile(fileName) == 0;
-}       
-
-FileMgr.prototype.createDirectory = function(dirName)
-{
-	return FileUtil.createDirectory(dirName) == 0;
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	var test = FileUtil.createDirectory(dirName);
+	test ? successCallback() : errorCallback();
 }
 
 FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback)
@@ -158,6 +137,14 @@ FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCall
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
 	var test = FileUtil.deleteDirectory(dirName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback)
+{
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	FileUtil.deleteFile(fileName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -234,6 +221,6 @@ FileWriter.prototype.writeAsText = function(file,text,bAppend)
 	}
 	navigator.fileMgr.addFileWriter(file,this);
 	this.readyState = 0; // EMPTY
-	this.result = FileUtil.write(file, text, bAppend) == 0;
-	return this.result;
+  	var call = FileUtil.write(file, text, bAppend);
+	this.result = null;
 }

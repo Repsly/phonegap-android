@@ -18,36 +18,35 @@ public class FileUtils {
 	private static final String LOG_TAG = "PhoneGapFileUtils";
 	
 	WebView mView;
-	DirectoryManager fileManager;
 	FileReader f_in;
 	FileWriter f_out;
 	
-	FileUtils(WebView view)
+	public FileUtils(WebView view, DroidGap gap)
 	{
 		mView = view;
 	}
 	
     public int testSaveLocationExists(){
-        if (fileManager.testSaveLocationExists())
+        if (DirectoryManager.testSaveLocationExists())
             return 0;
         else
             return 1;
     }
     
     public long getFreeDiskSpace(){
-        long freeDiskSpace=fileManager.getFreeDiskSpace();
+        long freeDiskSpace=DirectoryManager.getFreeDiskSpace();
         return freeDiskSpace;
     }
 
     public int testFileExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
     }
     
     public int testDirectoryExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
@@ -59,31 +58,30 @@ public class FileUtils {
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteDirectory (String dir){
-        if (fileManager.deleteDirectory(dir))
+        if (DirectoryManager.deleteDirectory(dir))
             return 0;
         else
             return 1;
     }
     
     public int deleteFile (String file){
-        try{
-            (new File(file)).delete();
-         }catch(Exception e){
-           Log.e(LOG_TAG, "deleteFile exception file: " + file + " exception: " + e.getMessage());
-           return -1;
-         }
-         return 0;   
+        if (DirectoryManager.deleteFile(file))
+            return 0;
+        else
+            return 1;
     }
-       
-    public int createDirectory(String dir) { 
-      try { 
-        boolean success = (new File(dir)).mkdirs(); 
-      } catch (Exception e) {
-        Log.e(LOG_TAG, "createDirectory exception dir: " + dir + " exception: " + e.getMessage());
-        return -1; 
-      } 
-        return 0; 
-    }
+    
+
+    /**
+	 * Create a new directory. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int createDirectory(String dir){
+    	if (DirectoryManager.createDirectory(dir))
+            return 0;
+        else
+            return 1;
+    } 
 	
     public String read(String filename)
     {
