@@ -4,3 +4,4 @@ gen
 assets/www/phonegap.js
 local.properties
 framework/phonegap.jar
+.DS_Store
