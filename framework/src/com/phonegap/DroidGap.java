@@ -57,77 +57,26 @@ import android.widget.LinearLayout;
 import android.os.Build.*;
 import android.provider.MediaStore;  
 
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
-//import com.phonegap.SimpleGestureFilter.SimpleGestureListener;
-
-
-public class DroidGap extends Activity  { //implements SimpleGestureListener {    
-  
-  
-      /*-------------------*/             
-      
-      // private SimpleGestureFilter detector;
-      // 
-      // @Override 
-      // public boolean dispatchTouchEvent(MotionEvent me){ 
-      //   this.detector.onTouchEvent(me);
-      //   return super.dispatchTouchEvent(me); 
-      // }
-      //        
-      // 
-      // @Override
-      // public void onSwipe(int direction) {
-      //  String str = "";
-      // 
-      //  switch (direction) {
-      // 
-      //  case SimpleGestureFilter.SWIPE_RIGHT : 
-      //     str = "Swipe Right";
-      //     appView.loadUrl("javascript:keyEvent.backTrigger()");
-      //     break;
-      //  case SimpleGestureFilter.SWIPE_LEFT :  
-      //     str = "Swipe Left";
-      //     appView.loadUrl("javascript:keyEvent.forwardTrigger()"); 
-      //     break;
-      //  case SimpleGestureFilter.SWIPE_DOWN :  
-      //     str = "Swipe Down";
-      //     appView.pageUp(false);
-      //     break;
-      //  case SimpleGestureFilter.SWIPE_UP :    
-      //     str = "Swipe Up";
-      //     appView.pageDown(false);
-      //     break;
-      // 
-      //  } 
-      //  Log.d(LOG_TAG, "---onSwipe---- :: " + str);
-      //   //Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-      // }
-      // 
-      // //@Override
-      // public void onDoubleTap() {
-      //  Log.d(LOG_TAG, "---onDoubleTap----");
-      //    //Toast.makeText(this, "Double Tap", Toast.LENGTH_SHORT).show(); 
-      // }  
-      /*---------------------------*/
-  	
+public class DroidGap extends Activity  { 
+        	
 	private static final String LOG_TAG = "PhoneGapDroidGap";
+	
 	protected WebView appView;
 	private LinearLayout root;	
 	
 	private Device gap;
 	private GeoBroker geo;
-  // private AccelBroker accel;
+  private AccelBroker accel;
 	private CameraLauncher launcher;
-  // private ContactManager mContacts;
+  private ContactManager mContacts;
 	private FileUtils fs;
-  // private NetworkManager netMan;
-  // private CompassListener mCompass;
-//	private Storage	cupcakeStorage;
-  // private CryptoHandler crypto;
-     private BrowserKey mKey;
-  // private AudioHandler audio;
+  private NetworkManager netMan;
+  private CompassListener mCompass;
+	private Storage	cupcakeStorage;
+  private CryptoHandler crypto;
+  private BrowserKey mKey;
+  private AudioHandler audio;
 
 	private Uri imageUri;
 	
@@ -144,15 +93,7 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
     @Override      
     public void onResume() {       
       super.onResume();      
-      appView.resumeTimers(); 
-      /*                                  
-      try{
-        WebView.class.getMethod("onResume").invoke(appView);    		   
-      } 
-      catch (java.lang.reflect.InvocationTargetException ite) { }
-      catch (java.lang.IllegalAccessException iae) {}
-      catch (java.lang.NoSuchMethodException nsm) {}
-      */        
+      appView.resumeTimers();       
       if (!this.startingCamera){                                   
         appView.loadUrl("javascript:if ((typeof(sp) != 'undefined') && sp.android) { sp.android.onResume() };");
       }    
@@ -182,78 +123,14 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         Log.d(LOG_TAG, "onCreate");
         
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE); 
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); 
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!        
-        // LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-        //          ViewGroup.LayoutParams.FILL_PARENT, 0.0F);     
-         
+                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);         
         LinearLayout.LayoutParams webviewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
             ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
-                    		
-        
-        // root = new LinearLayout(this);           
-        // root.setOrientation(LinearLayout.VERTICAL);
-        // root.setBackgroundColor(Color.BLACK);
-        // root.setLayoutParams(containerParams);
-           
-        //umjesto donje kontrole dodao ovo:                         
-        
+                    		                                   
         appView = new WebView(this);        
-        
-        
-        /*                                
-        appView = (new WebView(this){     
-                    
-          private long lastDownEvent = 0;    
-          private float lastDownY = 0; 
-          private float lastDownX = 0;
-          private boolean isFroyo = android.os.Build.VERSION.RELEASE.startsWith("2.2");
-          private boolean isEclair = android.os.Build.VERSION.RELEASE.startsWith("2.1");
-          
-          @Override           
-          public boolean onTouchEvent(MotionEvent me) {                          
-            
-            Log.d(LOG_TAG, "onTouchEvent " + me.toString() + (isEclair ? " Eclair" : " nije Eclair") + " version: " + android.os.Build.VERSION.RELEASE );
-            
-            if (isEclair){
-                          
-              if (me.getAction() == 0){
-                lastDownEvent = System.currentTimeMillis();
-                lastDownY = me.getY();
-                lastDownX = me.getX();
-              }
-              if (me.getAction() == 2){
-                boolean blizuZadnjegDown = Math.abs(me.getY() - lastDownY) < 20 &&  Math.abs(me.getX() - lastDownX) < 20;              
-                if (blizuZadnjegDown){              
-                  if (System.currentTimeMillis() - lastDownEvent > 300){
-                    Log.d(LOG_TAG, "onTouchEvent changing action 2 --> 0");
-                    me.setAction(0);
-                    lastDownEvent = System.currentTimeMillis() - 200;
-                  }                                                                                   
-                }
-              }      
-            }        
-            
-            if (isEclair){
-              if (me.getAction() == 2 && Math.abs(me.getY() - lastDownY) / Math.abs(me.getX() - lastDownX) < 1){
-                //Log.d(LOG_TAG, "onTouchEvent - " + me.toString());
-              }else{
-                //Log.d(LOG_TAG, "onTouchEvent + " + me.toString());
-                super.onTouchEvent(me);              
-              } 
-            }else{
-              super.onTouchEvent(me);
-            }
-                        
-            return true;
-          }
-        });              
-        */
-                 
-         
-        //iskljucio start                       
+                                                            
         appView.setLayoutParams(webviewParams);
         
         WebViewReflect.checkCompatibility();
@@ -266,23 +143,19 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
          appView.setWebChromeClient(new GapClient(this));
         }
         
-        appView.setWebViewClient(new GapViewClient(this));       
-                 
-        //appView.setInitialScale(100);         
+        appView.setWebViewClient(new GapViewClient(this));              
         appView.setVerticalScrollBarEnabled(true);
         appView.setVerticalScrollbarOverlay(true);
         appView.setHorizontalScrollbarOverlay(true);  
-        appView.setHorizontalScrollBarEnabled(false);
-        
+        appView.setHorizontalScrollBarEnabled(false);        
         appView.setSoundEffectsEnabled(true); 
-                        
+                                
         WebSettings settings = appView.getSettings();        
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);   
         settings.setBuiltInZoomControls(false);      
-        
-        
+                
         Package pack = this.getClass().getPackage();
         String appPackage = pack.getName();             
         WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");        
@@ -294,21 +167,8 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
         bindBrowser(appView);
         // if(cupcakeStorage != null)
         //   cupcakeStorage.setStorage(appPackage);     
-               
-        //iskljucio end                          
-                 
-        // // //dodao jer sam gore isljucio
-        // WebSettings settings = appView.getSettings();
-        // settings.setJavaScriptEnabled(true);
-        // 
-        // appView.setVerticalScrollbarOverlay(true);
-        // appView.setHorizontalScrollbarOverlay(true);
-                            
-        //root.addView(appView);           
-        //setContentView(root);                         
-        setContentView(appView);
-        
-        //detector = new SimpleGestureFilter(this,this);                               
+                                      
+        setContentView(appView);                               
     } 
         	
 	@Override
@@ -321,35 +181,29 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
     {
     	gap = new Device(appView, this);
     	geo = new GeoBroker(appView, this);
-      // accel = new AccelBroker(appView, this);
+      accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
-      // mContacts = new ContactManager(appView, this);
+      mContacts = new ContactManager(appView, this);
     	fs = new FileUtils(appView);
-      // netMan = new NetworkManager(appView, this);
-      // mCompass = new CompassListener(appView, this);  
-      // crypto = new CryptoHandler(appView);
+      netMan = new NetworkManager(appView, this);
+      mCompass = new CompassListener(appView, this);  
+      crypto = new CryptoHandler(appView);
       mKey = new BrowserKey(appView, this);
-      // audio = new AudioHandler(appView, this);
+      audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(geo, "Geo");
-      // appView.addJavascriptInterface(accel, "Accel");
+      appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
-      // appView.addJavascriptInterface(mContacts, "ContactHook");
+      appView.addJavascriptInterface(mContacts, "ContactHook");
     	appView.addJavascriptInterface(fs, "FileUtil");
-      // appView.addJavascriptInterface(netMan, "NetworkManager");
-      // appView.addJavascriptInterface(mCompass, "CompassHook");
-      // appView.addJavascriptInterface(crypto, "GapCrypto");
+      appView.addJavascriptInterface(netMan, "NetworkManager");
+      appView.addJavascriptInterface(mCompass, "CompassHook");
+      appView.addJavascriptInterface(crypto, "GapCrypto");
       appView.addJavascriptInterface(mKey, "BackButton");
-      // appView.addJavascriptInterface(audio, "GapAudio");
-    	
-    	
-      // if (android.os.Build.VERSION.RELEASE.startsWith("1."))
-      // {
-      //  cupcakeStorage = new Storage(appView);
-      //  appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
-      // }  
+      appView.addJavascriptInterface(audio, "GapAudio");
+    	      
     }
            
  
@@ -472,6 +326,15 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
                           {
                               result.cancel();
                           }
+                      }) 
+              .setOnKeyListener(
+                      new DialogInterface.OnKeyListener()
+                      {
+                        public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) 
+                        {                                                    
+                            //don't handle this any more, freezes application if false
+                            return true;
+                        }
                       })
           .create()
           .show();
@@ -499,9 +362,7 @@ public class DroidGap extends Activity  { //implements SimpleGestureListener {
 				dialog.dismiss();
 			}			
 		
-		}
-	  
-
+		}	  
 	}
 	
 	public final class EclairClient extends GapClient

@@ -133,108 +133,108 @@ PhoneGap.run_command = function() {
     document.location = url;
 
 };
-function Acceleration(x, y, z)
-{
-  this.x = x;
-  this.y = y;
-  this.z = z;
-  this.timestamp = new Date().getTime();
-  this.win = null;
-  this.fail = null;
-}
-
-var accelListeners = [];
-
-/**
- * This class provides access to device accelerometer data.
- * @constructor
- */
-function Accelerometer() {
-	/**
-	 * The last known acceleration.
-	 */
-	this.lastAcceleration = null;
-}
-
-/**
- * Asynchronously aquires the current acceleration.
- * @param {Function} successCallback The function to call when the acceleration
- * data is available
- * @param {Function} errorCallback The function to call when there is an error 
- * getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data
- * such as timeout.
- */
-Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
-	// If the acceleration is available then call success
-	// If the acceleration is not available then call error
-
-	// Created for iPhone, Iphone passes back _accel obj litteral
-	if (typeof successCallback == "function") {
-		if(this.lastAcceleration)
-		  successCallback(accel);
-		else
-		{
-			watchAcceleration(this.gotCurrentAcceleration, this.fail);
-		}
-	}
-}
-
-
-Accelerometer.prototype.gotAccel = function(key, x, y, z)
-{
-	console.log('we won');
-    var a = new Acceleration(x,y,z);
-    a.x = x;
-    a.y = y;
-    a.x = z;
-    a.win = accelListeners[key].win;
-    a.fail = accelListeners[key].fail;
-    this.timestamp = new Date().getTime();
-    this.lastAcceleration = a;
-    accelListeners[key] = a;
-    if (typeof a.win == "function") {
-      a.win(a);
-    }
-}
-
-
-/**
- * Asynchronously aquires the acceleration repeatedly at a given interval.
- * @param {Function} successCallback The function to call each time the acceleration
- * data is available
- * @param {Function} errorCallback The function to call when there is an error 
- * getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data
- * such as timeout.
- */
-
-Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
-	// TODO: add the interval id to a list so we can clear all watches
-  var frequency = (options != undefined)? options.frequency : 10000;
-  var accel = Acceleration(0,0,0);
-  accel.win = successCallback;
-  accel.fail = errorCallback;
-  accel.opts = options;
-  var key = accelListeners.push( accel ) - 1;
-  Accel.start(frequency, key);
-}
-
-/**
- * Clears the specified accelerometer watch.
- * @param {String} watchId The ID of the watch returned from #watchAcceleration.
- */
-Accelerometer.prototype.clearWatch = function(watchId) {
-	Accel.stop(watchId);
-}
-
-Accelerometer.prototype.epicFail = function(watchId, message) {
-  accelWatcher[key].fail();
-}
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.accelerometer == "undefined") navigator.accelerometer = new Accelerometer();
-});
+// function Acceleration(x, y, z)
+// {
+//   this.x = x;
+//   this.y = y;
+//   this.z = z;
+//   this.timestamp = new Date().getTime();
+//   this.win = null;
+//   this.fail = null;
+// }
+// 
+// var accelListeners = [];
+// 
+// /**
+//  * This class provides access to device accelerometer data.
+//  * @constructor
+//  */
+// function Accelerometer() {
+//  /**
+//   * The last known acceleration.
+//   */
+//  this.lastAcceleration = null;
+// }
+// 
+// /**
+//  * Asynchronously aquires the current acceleration.
+//  * @param {Function} successCallback The function to call when the acceleration
+//  * data is available
+//  * @param {Function} errorCallback The function to call when there is an error 
+//  * getting the acceleration data.
+//  * @param {AccelerationOptions} options The options for getting the accelerometer data
+//  * such as timeout.
+//  */
+// Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
+//  // If the acceleration is available then call success
+//  // If the acceleration is not available then call error
+// 
+//  // Created for iPhone, Iphone passes back _accel obj litteral
+//  if (typeof successCallback == "function") {
+//    if(this.lastAcceleration)
+//      successCallback(accel);
+//    else
+//    {
+//      watchAcceleration(this.gotCurrentAcceleration, this.fail);
+//    }
+//  }
+// }
+// 
+// 
+// Accelerometer.prototype.gotAccel = function(key, x, y, z)
+// {
+//  console.log('we won');
+//     var a = new Acceleration(x,y,z);
+//     a.x = x;
+//     a.y = y;
+//     a.x = z;
+//     a.win = accelListeners[key].win;
+//     a.fail = accelListeners[key].fail;
+//     this.timestamp = new Date().getTime();
+//     this.lastAcceleration = a;
+//     accelListeners[key] = a;
+//     if (typeof a.win == "function") {
+//       a.win(a);
+//     }
+// }
+// 
+// 
+// /**
+//  * Asynchronously aquires the acceleration repeatedly at a given interval.
+//  * @param {Function} successCallback The function to call each time the acceleration
+//  * data is available
+//  * @param {Function} errorCallback The function to call when there is an error 
+//  * getting the acceleration data.
+//  * @param {AccelerationOptions} options The options for getting the accelerometer data
+//  * such as timeout.
+//  */
+// 
+// Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
+//  // TODO: add the interval id to a list so we can clear all watches
+//   var frequency = (options != undefined)? options.frequency : 10000;
+//   var accel = Acceleration(0,0,0);
+//   accel.win = successCallback;
+//   accel.fail = errorCallback;
+//   accel.opts = options;
+//   var key = accelListeners.push( accel ) - 1;
+//   Accel.start(frequency, key);
+// }
+// 
+// /**
+//  * Clears the specified accelerometer watch.
+//  * @param {String} watchId The ID of the watch returned from #watchAcceleration.
+//  */
+// Accelerometer.prototype.clearWatch = function(watchId) {
+//  Accel.stop(watchId);
+// }
+// 
+// Accelerometer.prototype.epicFail = function(watchId, message) {
+//   accelWatcher[key].fail();
+// }
+// 
+// PhoneGap.addConstructor(function() {
+//     if (typeof navigator.accelerometer == "undefined") navigator.accelerometer = new Accelerometer();
+// });
 /**
  * This class provides access to the device camera.
  * @constructor
@@ -276,216 +276,216 @@ Camera.prototype.fail = function(err)
 PhoneGap.addConstructor(function() {
     if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
 });
-/**
- * This class provides access to device Compass data.
- * @constructor
- */
-function Compass() {
-    /**
-     * The last known Compass position.
-     */
-	this.lastHeading = null;
-    this.lastError = null;
-	this.callbacks = {
-		onHeadingChanged: [],
-        onError:           []
-    };
-};
-
-/**
- * Asynchronously aquires the current heading.
- * @param {Function} successCallback The function to call when the heading
- * data is available
- * @param {Function} errorCallback The function to call when there is an error 
- * getting the heading data.
- * @param {PositionOptions} options The options for getting the heading data
- * such as timeout.
- */
-Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
-	if (this.lastHeading == null) {
-		CompassHook.start();
-	}
-	else 
-	if (typeof successCallback == "function") {
-		successCallback(this.lastHeading);
-	}
-};
-
-/**
- * Asynchronously aquires the heading repeatedly at a given interval.
- * @param {Function} successCallback The function to call each time the heading
- * data is available
- * @param {Function} errorCallback The function to call when there is an error 
- * getting the heading data.
- * @param {HeadingOptions} options The options for getting the heading data
- * such as timeout and the frequency of the watch.
- */
-Compass.prototype.watchHeading= function(successCallback, errorCallback, options) {
-	// Invoke the appropriate callback with a new Position object every time the implementation 
-	// determines that the position of the hosting device has changed. 
-	
-	this.getCurrentHeading(successCallback, errorCallback, options);
-	var frequency = 100;
-    if (typeof(options) == 'object' && options.frequency)
-        frequency = options.frequency;
-
-	var self = this;
-	return setInterval(function() {
-		self.getCurrentHeading(successCallback, errorCallback, options);
-	}, frequency);
-};
-
-
-/**
- * Clears the specified heading watch.
- * @param {String} watchId The ID of the watch returned from #watchHeading.
- */
-Compass.prototype.clearWatch = function(watchId) {
-	clearInterval(watchId);
-};
-
-
-/**
- * Called by the geolocation framework when the current heading is found.
- * @param {HeadingOptions} position The current heading.
- */
-Compass.prototype.setHeading = function(heading) {
-    this.lastHeading = heading;
-    for (var i = 0; i < this.callbacks.onHeadingChanged.length; i++) {
-        var f = this.callbacks.onHeadingChanged.shift();
-        f(heading);
-    }
-};
-
-/**
- * Called by the geolocation framework when an error occurs while looking up the current position.
- * @param {String} message The text of the error message.
- */
-Compass.prototype.setError = function(message) {
-    this.lastError = message;
-    for (var i = 0; i < this.callbacks.onError.length; i++) {
-        var f = this.callbacks.onError.shift();
-        f(message);
-    }
-};
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.compass == "undefined") navigator.compass = new Compass();
-});
-var Contact = function(){
-  this.name = new ContactName();
-  this.emails = [];
-  this.phones = [];
-}
-
-var ContactName = function()
-{
-  this.formatted = "";
-  this.familyName = "";
-  this.givenName = "";
-  this.additionalNames = [];
-  this.prefixes = [];
-  this.suffixes = [];
-}
-
-
-var ContactEmail = function()
-{
-  this.types = [];
-  this.address = "";
-}
-
-var ContactPhoneNumber = function()
-{
-  this.types = [];
-  this.number = "";
-}
-
-
-var Contacts = function()
-{
-  this.records = [];  
-}
-
-Contacts.prototype.find = function(obj, win, fail)
-{
-  if(obj.name != null)
-  {
-	// Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
-	   var searchTerm = '';
-	   if (obj.name.givenName && obj.name.givenName.length > 0) {
-			searchTerm = obj.name.givenName.split(' ').join('%');
-	   }
-	   if (obj.name.familyName && obj.name.familyName.length > 0) {
-			searchTerm += obj.name.familyName.split(' ').join('%');
-	   }
-	   if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
-			searchTerm = obj.name.formatted;
-	   }
-	   ContactHook.search(searchTerm, "", ""); 
-  }
-  this.win = win;
-  this.fail = fail;
-}
-
-Contacts.prototype.droidFoundContact = function(name, npa, email)
-{
-  var contact = new Contact();
-  contact.name = new ContactName();
-  contact.name.formatted = name;
-  contact.name.givenName = name;
-  var mail = new ContactEmail();
-  mail.types.push("home");
-  mail.address = email;
-  contact.emails.push(mail);
-  phone = new ContactPhoneNumber();
-  phone.types.push("home");
-  phone.number = npa;
-  contact.phones.push(phone);
-  this.records.push(contact);
-}
-
-Contacts.prototype.droidDone = function()
-{
-  this.win(this.records);
-}
-
-PhoneGap.addConstructor(function() {
-  if(typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
-});
-var Crypto = function()
-{
-}
-
-Crypto.prototype.encrypt = function(seed, string, callback)
-{
-	GapCrypto.encrypt(seed, string);
-	this.encryptWin = callback;
-}
-
-Crypto.prototype.decrypt = function(seed, string, callback)
-{
-	GapCrypto.decrypt(seed, string);
-	this.decryptWin = callback;
-}
-
-Crypto.prototype.gotCryptedString = function(string)
-{
-	this.encryptWin(string);
-}
-
-Crypto.prototype.getPlainString = function(string)
-{
-	this.decryptWin(string);
-}
-
-PhoneGap.addConstructor(function() {
-  if (typeof navigator.Crypto == "undefined")
-  {
-    navigator.Crypto = new Crypto();
-  }
-});
-
+// /**
+//  * This class provides access to device Compass data.
+//  * @constructor
+//  */
+// function Compass() {
+//     /**
+//      * The last known Compass position.
+//      */
+//  this.lastHeading = null;
+//     this.lastError = null;
+//  this.callbacks = {
+//    onHeadingChanged: [],
+//         onError:           []
+//     };
+// };
+// 
+// /**
+//  * Asynchronously aquires the current heading.
+//  * @param {Function} successCallback The function to call when the heading
+//  * data is available
+//  * @param {Function} errorCallback The function to call when there is an error 
+//  * getting the heading data.
+//  * @param {PositionOptions} options The options for getting the heading data
+//  * such as timeout.
+//  */
+// Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
+//  if (this.lastHeading == null) {
+//    CompassHook.start();
+//  }
+//  else 
+//  if (typeof successCallback == "function") {
+//    successCallback(this.lastHeading);
+//  }
+// };
+// 
+// /**
+//  * Asynchronously aquires the heading repeatedly at a given interval.
+//  * @param {Function} successCallback The function to call each time the heading
+//  * data is available
+//  * @param {Function} errorCallback The function to call when there is an error 
+//  * getting the heading data.
+//  * @param {HeadingOptions} options The options for getting the heading data
+//  * such as timeout and the frequency of the watch.
+//  */
+// Compass.prototype.watchHeading= function(successCallback, errorCallback, options) {
+//  // Invoke the appropriate callback with a new Position object every time the implementation 
+//  // determines that the position of the hosting device has changed. 
+//  
+//  this.getCurrentHeading(successCallback, errorCallback, options);
+//  var frequency = 100;
+//     if (typeof(options) == 'object' && options.frequency)
+//         frequency = options.frequency;
+// 
+//  var self = this;
+//  return setInterval(function() {
+//    self.getCurrentHeading(successCallback, errorCallback, options);
+//  }, frequency);
+// };
+// 
+// 
+// /**
+//  * Clears the specified heading watch.
+//  * @param {String} watchId The ID of the watch returned from #watchHeading.
+//  */
+// Compass.prototype.clearWatch = function(watchId) {
+//  clearInterval(watchId);
+// };
+// 
+// 
+// /**
+//  * Called by the geolocation framework when the current heading is found.
+//  * @param {HeadingOptions} position The current heading.
+//  */
+// Compass.prototype.setHeading = function(heading) {
+//     this.lastHeading = heading;
+//     for (var i = 0; i < this.callbacks.onHeadingChanged.length; i++) {
+//         var f = this.callbacks.onHeadingChanged.shift();
+//         f(heading);
+//     }
+// };
+// 
+// /**
+//  * Called by the geolocation framework when an error occurs while looking up the current position.
+//  * @param {String} message The text of the error message.
+//  */
+// Compass.prototype.setError = function(message) {
+//     this.lastError = message;
+//     for (var i = 0; i < this.callbacks.onError.length; i++) {
+//         var f = this.callbacks.onError.shift();
+//         f(message);
+//     }
+// };
+// 
+// PhoneGap.addConstructor(function() {
+//     if (typeof navigator.compass == "undefined") navigator.compass = new Compass();
+// });
+// var Contact = function(){
+//   this.name = new ContactName();
+//   this.emails = [];
+//   this.phones = [];
+// }
+// 
+// var ContactName = function()
+// {
+//   this.formatted = "";
+//   this.familyName = "";
+//   this.givenName = "";
+//   this.additionalNames = [];
+//   this.prefixes = [];
+//   this.suffixes = [];
+// }
+// 
+// 
+// var ContactEmail = function()
+// {
+//   this.types = [];
+//   this.address = "";
+// }
+// 
+// var ContactPhoneNumber = function()
+// {
+//   this.types = [];
+//   this.number = "";
+// }
+// 
+// 
+// var Contacts = function()
+// {
+//   this.records = [];  
+// }
+// 
+// Contacts.prototype.find = function(obj, win, fail)
+// {
+//   if(obj.name != null)
+//   {
+//  // Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
+//     var searchTerm = '';
+//     if (obj.name.givenName && obj.name.givenName.length > 0) {
+//      searchTerm = obj.name.givenName.split(' ').join('%');
+//     }
+//     if (obj.name.familyName && obj.name.familyName.length > 0) {
+//      searchTerm += obj.name.familyName.split(' ').join('%');
+//     }
+//     if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
+//      searchTerm = obj.name.formatted;
+//     }
+//     ContactHook.search(searchTerm, "", ""); 
+//   }
+//   this.win = win;
+//   this.fail = fail;
+// }
+// 
+// Contacts.prototype.droidFoundContact = function(name, npa, email)
+// {
+//   var contact = new Contact();
+//   contact.name = new ContactName();
+//   contact.name.formatted = name;
+//   contact.name.givenName = name;
+//   var mail = new ContactEmail();
+//   mail.types.push("home");
+//   mail.address = email;
+//   contact.emails.push(mail);
+//   phone = new ContactPhoneNumber();
+//   phone.types.push("home");
+//   phone.number = npa;
+//   contact.phones.push(phone);
+//   this.records.push(contact);
+// }
+// 
+// Contacts.prototype.droidDone = function()
+// {
+//   this.win(this.records);
+// }
+// 
+// PhoneGap.addConstructor(function() {
+//   if(typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
+// });
+// var Crypto = function()
+// {
+// }
+// 
+// Crypto.prototype.encrypt = function(seed, string, callback)
+// {
+//  GapCrypto.encrypt(seed, string);
+//  this.encryptWin = callback;
+// }
+// 
+// Crypto.prototype.decrypt = function(seed, string, callback)
+// {
+//  GapCrypto.decrypt(seed, string);
+//  this.decryptWin = callback;
+// }
+// 
+// Crypto.prototype.gotCryptedString = function(string)
+// {
+//  this.encryptWin(string);
+// }
+// 
+// Crypto.prototype.getPlainString = function(string)
+// {
+//  this.decryptWin(string);
+// }
+// 
+// PhoneGap.addConstructor(function() {
+//   if (typeof navigator.Crypto == "undefined")
+//   {
+//     navigator.Crypto = new Crypto();
+//   }
+// });
+// 
 /**
  * this represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
@@ -850,8 +850,9 @@ Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, 
 }
 
 Geolocation.prototype.fail = function(key)
-{
-  geoListeners[key].fail();
+{       
+  if (geoListeners && geoListeners[key])
+    geoListeners[key].fail();
 }
  
 Geolocation.prototype.clearWatch = function(watchId)
@@ -909,122 +910,122 @@ if (document.keyEvent == null || typeof document.keyEvent == 'undefined')
 {
   window.keyEvent = document.keyEvent = new KeyEvent();
 }
-/**
- * This class provides access to the device media, interfaces to both sound and video
- * @constructor
- */
-function Media(src, successCallback, errorCallback) {
-	this.src = src;
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;												
-}
-
-Media.prototype.record = function() {
-}
-
-Media.prototype.play = function() {
-}
-
-Media.prototype.pause = function() {
-}
-
-Media.prototype.stop = function() {
-}
-
-
-/**
- * This class contains information about any Media errors.
- * @constructor
- */
-function MediaError() {
-	this.code = null,
-	this.message = "";
-}
-
-MediaError.MEDIA_ERR_ABORTED 		= 1;
-MediaError.MEDIA_ERR_NETWORK 		= 2;
-MediaError.MEDIA_ERR_DECODE 		= 3;
-MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
-
-
-//if (typeof navigator.audio == "undefined") navigator.audio = new Media(src);
-
-/**
- * This class provides access to the device media, interfaces to both sound and video
- * @constructor
- */
-
-Media.prototype.play = function() {
-  GapAudio.startPlayingAudio(this.src);  
-}
-
-Media.prototype.stop = function() {
-  GapAudio.stopPlayingAudio();
-}
-
-Media.prototype.startRecord = function() {
-  GapAudio.startRecordingAudio(this.src);
-}
-
-Media.prototype.stopRecordingAudio = function() {
-  GapAudio.stopRecordingAudio();
-}
-
-
-/**
- * This class contains information about any NetworkStatus.
- * @constructor
- */
-function NetworkStatus() {
-	this.code = null;
-	this.message = "";
-}
-NetworkStatus.NOT_REACHABLE = 0;
-NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
-NetworkStatus.REACHABLE_VIA_WIFI_NETWORK = 2;
-/**
- * This class provides access to device Network data (reachability).
- * @constructor
- */
-function Network() {
-    /**
-     * The last known Network status.
-	 * { hostName: string, ipAddress: string, 
-		remoteHostStatus: int(0/1/2), internetConnectionStatus: int(0/1/2), localWiFiConnectionStatus: int (0/2) }
-     */
-	this.lastReachability = null;
-};
-/**
- * Called by the geolocation framework when the reachability status has changed.
- * @param {Reachibility} reachability The current reachability status.
- */
-Network.prototype.updateReachability = function(reachability) {
-    this.lastReachability = reachability;
-};
-/**
- * 
- * @param {Object} uri
- * @param {Function} win
- * @param {Object} options  (isIpAddress:boolean)
- */
-Network.prototype.isReachable = function(uri, win, options)
-{
-  var status = new NetworkStatus();
-  if(NetworkManager.isReachable(uri))
-  {
-    if (NetworkManager.isWifiActive()) {
-      status.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
-    } else {
-      status.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
-	}
-  } else {
-    status.code = NetworkStatus.NOT_REACHABLE;
-  }
-  win(status);
-};
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.network == "undefined") navigator.network = new Network();
-});/**
+// /**
+//  * This class provides access to the device media, interfaces to both sound and video
+//  * @constructor
+//  */
+// function Media(src, successCallback, errorCallback) {
+//  this.src = src;
+//  this.successCallback = successCallback;
+//  this.errorCallback = errorCallback;                       
+// }
+// 
+// Media.prototype.record = function() {
+// }
+// 
+// Media.prototype.play = function() {
+// }
+// 
+// Media.prototype.pause = function() {
+// }
+// 
+// Media.prototype.stop = function() {
+// }
+// 
+// 
+// /**
+//  * This class contains information about any Media errors.
+//  * @constructor
+//  */
+// function MediaError() {
+//  this.code = null,
+//  this.message = "";
+// }
+// 
+// MediaError.MEDIA_ERR_ABORTED     = 1;
+// MediaError.MEDIA_ERR_NETWORK     = 2;
+// MediaError.MEDIA_ERR_DECODE    = 3;
+// MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
+// 
+// 
+// //if (typeof navigator.audio == "undefined") navigator.audio = new Media(src);
+// 
+// /**
+//  * This class provides access to the device media, interfaces to both sound and video
+//  * @constructor
+//  */
+// 
+// Media.prototype.play = function() {
+//   GapAudio.startPlayingAudio(this.src);  
+// }
+// 
+// Media.prototype.stop = function() {
+//   GapAudio.stopPlayingAudio();
+// }
+// 
+// Media.prototype.startRecord = function() {
+//   GapAudio.startRecordingAudio(this.src);
+// }
+// 
+// Media.prototype.stopRecordingAudio = function() {
+//   GapAudio.stopRecordingAudio();
+// }
+// 
+// 
+// /**
+//  * This class contains information about any NetworkStatus.
+//  * @constructor
+//  */
+// function NetworkStatus() {
+//  this.code = null;
+//  this.message = "";
+// }
+// NetworkStatus.NOT_REACHABLE = 0;
+// NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
+// NetworkStatus.REACHABLE_VIA_WIFI_NETWORK = 2;
+// /**
+//  * This class provides access to device Network data (reachability).
+//  * @constructor
+//  */
+// function Network() {
+//     /**
+//      * The last known Network status.
+//   * { hostName: string, ipAddress: string, 
+//    remoteHostStatus: int(0/1/2), internetConnectionStatus: int(0/1/2), localWiFiConnectionStatus: int (0/2) }
+//      */
+//  this.lastReachability = null;
+// };
+// /**
+//  * Called by the geolocation framework when the reachability status has changed.
+//  * @param {Reachibility} reachability The current reachability status.
+//  */
+// Network.prototype.updateReachability = function(reachability) {
+//     this.lastReachability = reachability;
+// };
+// /**
+//  * 
+//  * @param {Object} uri
+//  * @param {Function} win
+//  * @param {Object} options  (isIpAddress:boolean)
+//  */
+// Network.prototype.isReachable = function(uri, win, options)
+// {
+//   var status = new NetworkStatus();
+//   if(NetworkManager.isReachable(uri))
+//   {
+//     if (NetworkManager.isWifiActive()) {
+//       status.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
+//     } else {
+//       status.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
+//  }
+//   } else {
+//     status.code = NetworkStatus.NOT_REACHABLE;
+//   }
+//   win(status);
+// };
+// PhoneGap.addConstructor(function() {
+//     if (typeof navigator.network == "undefined") navigator.network = new Network();
+// });/**
  * This class provides access to notifications on the device.
  */
 function Notification() {
@@ -1173,92 +1174,92 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
-/*
- * This is purely for the Android 1.5/1.6 HTML 5 Storage
- * I was hoping that Android 2.0 would deprecate this, but given the fact that 
- * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
- */
-
-var DroidDB = function()
-{
-  this.txQueue = [];
-}
-
-DroidDB.prototype.addResult = function(rawdata, tx_id)
-{
-  eval("var data = " + rawdata);
-  var tx = this.txQueue[tx_id];
-  tx.resultSet.push(data);
-}
-
-DroidDB.prototype.completeQuery = function(tx_id)
-{
-  var tx = this.txQueue[tx_id];
-  var r = new result();
-  r.rows.resultSet = tx.resultSet;
-  r.rows.length = tx.resultSet.length;
-  tx.win(r);
-}
-
-DroidDB.prototype.fail = function(reason, tx_id)
-{
-  var tx = this.txQueue[tx_id];
-  tx.fail(reason);
-}
-
-var DatabaseShell = function()
-{
-  
-}
-
-DatabaseShell.prototype.transaction = function(process)
-{
-  tx = new Tx();
-  process(tx);
-}
-
-var Tx = function()
-{
-  droiddb.txQueue.push(this);
-  this.id = droiddb.txQueue.length - 1;
-  this.resultSet = [];
-}
-
-Tx.prototype.executeSql = function(query, params, win, fail)
-{
-  droidStorage.executeSql(query, params, this.id);
-  tx.win = win;
-  tx.fail = fail;
-}
-
-var result = function()
-{
-  this.rows = new Rows();
-}
-
-var Rows = function()
-{
-  this.resultSet = [];
-  this.length = 0;
-}
-
-Rows.prototype.item = function(row_id)
-{
-  return this.resultSet[id];
-}
-
-var dbSetup = function(name, version, display_name, size)
-{
-    droidStorage.openDatabase(name, version, display_name, size)
-    db_object = new DatabaseShell();
-    return db_object;
-}
-
-PhoneGap.addConstructor(function() {
-  if (typeof window.openDatabase == "undefined") 
-  {
-    navigator.openDatabase = window.openDatabase = dbSetup;
-    window.droiddb = new DroidDB();
-  }
-});
-
+// /*
+//  * This is purely for the Android 1.5/1.6 HTML 5 Storage
+//  * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+//  * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+//  */
+// 
+// var DroidDB = function()
+// {
+//   this.txQueue = [];
+// }
+// 
+// DroidDB.prototype.addResult = function(rawdata, tx_id)
+// {
+//   eval("var data = " + rawdata);
+//   var tx = this.txQueue[tx_id];
+//   tx.resultSet.push(data);
+// }
+// 
+// DroidDB.prototype.completeQuery = function(tx_id)
+// {
+//   var tx = this.txQueue[tx_id];
+//   var r = new result();
+//   r.rows.resultSet = tx.resultSet;
+//   r.rows.length = tx.resultSet.length;
+//   tx.win(r);
+// }
+// 
+// DroidDB.prototype.fail = function(reason, tx_id)
+// {
+//   var tx = this.txQueue[tx_id];
+//   tx.fail(reason);
+// }
+// 
+// var DatabaseShell = function()
+// {
+//   
+// }
+// 
+// DatabaseShell.prototype.transaction = function(process)
+// {
+//   tx = new Tx();
+//   process(tx);
+// }
+// 
+// var Tx = function()
+// {
+//   droiddb.txQueue.push(this);
+//   this.id = droiddb.txQueue.length - 1;
+//   this.resultSet = [];
+// }
+// 
+// Tx.prototype.executeSql = function(query, params, win, fail)
+// {
+//   droidStorage.executeSql(query, params, this.id);
+//   tx.win = win;
+//   tx.fail = fail;
+// }
+// 
+// var result = function()
+// {
+//   this.rows = new Rows();
+// }
+// 
+// var Rows = function()
+// {
+//   this.resultSet = [];
+//   this.length = 0;
+// }
+// 
+// Rows.prototype.item = function(row_id)
+// {
+//   return this.resultSet[id];
+// }
+// 
+// var dbSetup = function(name, version, display_name, size)
+// {
+//     droidStorage.openDatabase(name, version, display_name, size)
+//     db_object = new DatabaseShell();
+//     return db_object;
+// }
+// 
+// PhoneGap.addConstructor(function() {
+//   if (typeof window.openDatabase == "undefined") 
+//   {
+//     navigator.openDatabase = window.openDatabase = dbSetup;
+//     window.droiddb = new DroidDB();
+//   }
+// });
+// 
