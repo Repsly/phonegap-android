@@ -1072,7 +1072,7 @@ FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	FileUtil.deleteFile(fileName);
+	var test = FileUtil.deleteFile(fileName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -1090,6 +1090,30 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
   		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
 	}
 }
+ 
+FileMgr.prototype.readLogs = function(){
+  return ("" + FileUtil.readLogs() + "").split("\n");
+}     
+
+FileMgr.prototype.uuid = function(){
+  return "" + FileUtil.uuid();
+}
+       
+FileMgr.prototype.readFile = function(fileName)
+{
+	return "" + FileUtil.read(fileName) + "";
+}
+
+FileMgr.prototype.writeFile = function(fileName, text, append)
+{             
+  append = !!append;                                        
+  return FileUtil.write(fileName, text, append) == 0;
+}
+
+FileMgr.prototype.deleteFile = function(fileName)
+{
+	return FileUtil.deleteFile(fileName) == 0;
+}       
 
 
 // File Reader
