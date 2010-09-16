@@ -96,6 +96,11 @@ public class Device implements Plugin {
 				r.put("platform", Device.platform);
 				r.put("name", this.getProductName());
 				r.put("phonegap", Device.phonegapVersion);
+				
+				r.put("model", this.getModel());
+				r.put("sdkVersion", this.getSDKVersion());
+				r.put("simSerialNumber", this.getSimSerialNumber());
+				
 				//JSONObject pg = new JSONObject();
 				//pg.put("version", Device.phonegapVersion);
 				//r.put("phonegap", pg);

@@ -9,7 +9,10 @@ function Device() {
     this.version = null;
     this.name = null;
     this.uuid = null;
-    this.phonegap = null;
+    this.phonegap = null;         
+    this.model = null;
+    this.sdkVersion = null;
+    this.simSerialNumber = null;
 
     var me = this;
     PhoneGap.execAsync(
@@ -18,7 +21,11 @@ function Device() {
             me.platform = info.platform;
             me.version = info.version;
             me.uuid = info.uuid;
-            me.phonegap = info.phonegap;
+            me.phonegap = info.phonegap;  
+            me.name = info.name;  
+            me.model = info.model;          
+            me.sdkVersion = info.sdkVersion;
+            me.simSerialNumber = info.simSerialNumber;            
         },
         function(e) {
             me.available = false;

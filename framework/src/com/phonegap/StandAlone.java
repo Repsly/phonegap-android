@@ -10,8 +10,8 @@ public class StandAlone extends DroidGap {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        //super.loadUrl("file:///android_asset/www/splash.html");                        
+                                                      
+        super.loadUrl("file:///android_asset/www/index.html");                        
     }		                                               
     	
 }
