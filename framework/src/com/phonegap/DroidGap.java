@@ -375,7 +375,7 @@ public class DroidGap extends Activity {
             Log.d(LOG_TAG, message);
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
             dlg.setMessage(message);
-            dlg.setTitle("Alert");
+            dlg.setTitle("Upozorenje");
             dlg.setCancelable(false);
             dlg.setPositiveButton(android.R.string.ok,
             	new AlertDialog.OnClickListener() {
@@ -400,15 +400,15 @@ public class DroidGap extends Activity {
         public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
             dlg.setMessage(message);
-            dlg.setTitle("Confirm");
+            dlg.setTitle("Provjera");
             dlg.setCancelable(false);
-            dlg.setPositiveButton(android.R.string.ok, 
+            dlg.setPositiveButton("Da",//android.R.string.ok, 
             	new DialogInterface.OnClickListener() {
                 	public void onClick(DialogInterface dialog, int which) {
                 		result.confirm();
                     }
                 });
-            dlg.setNegativeButton(android.R.string.cancel, 
+            dlg.setNegativeButton("Ne",//android.R.string.cancel, 
             	new DialogInterface.OnClickListener() {
                 	public void onClick(DialogInterface dialog, int which) {
                 		result.cancel();
