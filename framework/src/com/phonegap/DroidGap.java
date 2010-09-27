@@ -76,7 +76,7 @@ import android.widget.LinearLayout;
  */
 public class DroidGap extends Activity {
 
-    private static final String LOG_TAG = "DroidGap";
+    private static final String LOG_TAG = "PhoneGapDroidGap";
 
     protected WebView appView;					// The webview for our app
 	protected ImageView splashScreen;

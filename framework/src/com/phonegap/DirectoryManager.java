@@ -7,6 +7,8 @@ import android.os.StatFs;
 import android.util.Log;
 
 public class DirectoryManager {
+
+  private static final String LOG_TAG = "PhoneGapDirectoryManager";
 	
 	protected static boolean testFileExists (String name){
 		boolean status;
@@ -78,7 +80,7 @@ public class DirectoryManager {
 						deletedFile.delete();
 					}
 					newPath.delete();
-					Log.i("DirectoryManager deleteDirectory", fileName);
+					Log.i(LOG_TAG, "DirectoryManager deleteDirectory " + fileName);
 					status = true;
 				}catch (Exception e){
 					e.printStackTrace();
@@ -103,21 +105,27 @@ public class DirectoryManager {
 			checker.checkDelete(newPath.toString());
 			if (newPath.isFile()){
 				try {
-					Log.i("DirectoryManager deleteFile", fileName);
+  				Log.i(LOG_TAG, "DirectoryManager deleteFile " + fileName);
 					newPath.delete();
 					status = true;
 				}catch (SecurityException se){
+					Log.i(LOG_TAG, "DirectoryManager deleteFile SecurityException");	
 					se.printStackTrace();
 					status = false;
 				}
-			}else
+			}else{				
+				Log.i(LOG_TAG, "DirectoryManager deleteFile newPath.isFile() returned false");
 				status = false;
-		}else
+			}
+		}else{		
+			Log.i(LOG_TAG, "DirectoryManager deleteFile testSaveLocationExists() returned false");
 			status = false;
+		}
 		return status;
 	}
 	
 	private static File constructFilePaths (String file1, String file2){
+		//Log.d(LOG_TAG, "DirectoryManager constructFilePaths file1:" + file1 + " file2:" + file2);	
 		File newPath;
 		newPath = new File(file1+"/"+file2);
 		return newPath;

@@ -64,11 +64,33 @@ public class FileUtils {
             return 1;
     }
     
-    public int deleteFile (String file){
+    public int deleteFile (String fileName){
+		  int status = 1;
+					
+			File file = new File(fileName);
+			if (file.isFile()){
+				try {  				
+					file.delete();
+					Log.d(LOG_TAG, "deleteFile file deleted " + fileName);
+					status = 0;
+				}catch (SecurityException se){
+					Log.d(LOG_TAG, "deleteFile SecurityException");	
+					se.printStackTrace();
+					status = 1;
+				}
+			}else{				
+				Log.d(LOG_TAG, "deleteFile file.isFile() returned false");
+				status = 1;
+			}		
+		  return status;
+
+		/*
+				Log.d(LOG_TAG, "going to delete file: " + file);
         if (DirectoryManager.deleteFile(file))
             return 0;
         else
             return 1;
+		*/
     }
     
 
@@ -130,7 +152,7 @@ public class FileUtils {
     public String readLogs(){
       try{             
         StringBuilder log = new StringBuilder();                    
-        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapClientLog:V PhoneGapDroidGap:I PhoneGapFileUtils:I PhoneGap:I PhoneGapSQLiteStorage:I *:S");
+        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapLog:V PhoneGapDirectoryManager:V PhoneGapDroidGap:V PhoneGapFileUtils:V PhoneGap:V *:S");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;

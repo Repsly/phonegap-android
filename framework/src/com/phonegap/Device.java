@@ -112,6 +112,9 @@ public class Device implements Plugin {
 			else if (action.equals("vibrate")) {
 				this.vibrate(args.getLong(0));
 			}
+			else if (action.equals("isNetworkRoaming")) {
+				return new PluginResult(status, this.isNetworkRoaming());
+			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
