@@ -460,8 +460,12 @@ public class DroidGap extends Activity {
 		  		  
 			if( estimatedSize < MAX_QUOTA)
 		    	{	                                        
-		    	  //increase for 1Mb        		    	  		    	  
+		    	  
 		    		long newQuota = estimatedSize;		    		
+						if (estimatedSize < currentQuota){
+								//increase for 1Mb        		    	  		    	  
+								newQuota = currentQuota + 1 * 1024 * 1024;
+						}
 		    		Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );  	
 		    		quotaUpdater.updateQuota(newQuota);
 		    	}
