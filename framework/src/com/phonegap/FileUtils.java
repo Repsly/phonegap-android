@@ -18,36 +18,35 @@ public class FileUtils {
 	private static final String LOG_TAG = "PhoneGapFileUtils";
 	
 	WebView mView;
-	DirectoryManager fileManager;
 	FileReader f_in;
 	FileWriter f_out;
 	
-	FileUtils(WebView view)
+	public FileUtils(WebView view, DroidGap gap)
 	{
 		mView = view;
 	}
 	
     public int testSaveLocationExists(){
-        if (fileManager.testSaveLocationExists())
+        if (DirectoryManager.testSaveLocationExists())
             return 0;
         else
             return 1;
     }
     
     public long getFreeDiskSpace(){
-        long freeDiskSpace=fileManager.getFreeDiskSpace();
+        long freeDiskSpace=DirectoryManager.getFreeDiskSpace();
         return freeDiskSpace;
     }
 
     public int testFileExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
     }
     
     public int testDirectoryExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
@@ -59,31 +58,50 @@ public class FileUtils {
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteDirectory (String dir){
-        if (fileManager.deleteDirectory(dir))
+        if (DirectoryManager.deleteDirectory(dir))
             return 0;
         else
             return 1;
     }
     
-    public int deleteFile (String file){
-        try{
-            (new File(file)).delete();
-         }catch(Exception e){
-           Log.e(LOG_TAG, "deleteFile exception file: " + file + " exception: " + e.getMessage());
-           return -1;
-         }
-         return 0;   
+    public int deleteFile (String fileName){
+		  int status = 1;
+					
+			File file = new File(fileName);
+			if (file.isFile()){
+				try {  				
+					file.delete();
+					Log.d(LOG_TAG, "deleteFile file deleted " + fileName);
+					status = 0;
+				}catch (SecurityException se){
+					Log.d(LOG_TAG, "deleteFile SecurityException");	
+					se.printStackTrace();
+					status = 1;
+				}
+			}else{				
+				Log.d(LOG_TAG, "deleteFile file.isFile() returned false");
+				status = 1;
+			}		
+		  return status;
+
+		/*
+				Log.d(LOG_TAG, "going to delete file: " + file);
+        if (DirectoryManager.deleteFile(file))
+            return 0;
+        else
+            return 1;
+		*/
     }
-       
-    public int createDirectory(String dir) { 
-      try { 
-        boolean success = (new File(dir)).mkdirs(); 
-      } catch (Exception e) {
-        Log.e(LOG_TAG, "createDirectory exception dir: " + dir + " exception: " + e.getMessage());
-        return -1; 
-      } 
-        return 0; 
-    }
+    
+
+    /**
+	 * Create a new directory. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public void createDirectory(String dir){
+				File file = new File(dir);
+				file.mkdir();				
+    } 
 	
     public String read(String filename)
     {
@@ -132,7 +150,7 @@ public class FileUtils {
     public String readLogs(){
       try{             
         StringBuilder log = new StringBuilder();                    
-        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapClientLog:V PhoneGapDroidGap:I PhoneGapFileUtils:I PhoneGap:I PhoneGapSQLiteStorage:I *:S");
+        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapLog:V PhoneGapDirectoryManager:V PhoneGapDroidGap:V PhoneGapFileUtils:V PhoneGap:V PhoneGapCameraLauncher:V *:S");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;

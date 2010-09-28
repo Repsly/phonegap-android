@@ -1,17 +1,22 @@
 package com.phonegap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
+
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.People;
 import android.util.Log;
 import android.webkit.WebView;
-import android.app.Activity;
-import android.content.ContentResolver;
+import android.content.Intent;
 import android.net.Uri;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 
 @SuppressWarnings("deprecation")
-public class ContactManager {
+public class ContactManager implements Plugin {
 	
 	public class ContactTriplet
 	{
@@ -19,20 +24,110 @@ public class ContactManager {
 		public String email = "";
 		public String phone = "";
 	}
-	
+
+    WebView webView;					// WebView object
+    DroidGap ctx;						// DroidGap object
+
 	private static final String LOG_TAG = "PhoneGapContactQuery";
-	Activity mApp;
-	WebView mView;
 	Uri mPeople = android.provider.Contacts.People.CONTENT_URI;
 	Uri mPhone = android.provider.Contacts.Phones.CONTENT_URI;	
 	Uri mEmail = android.provider.Contacts.ContactMethods.CONTENT_URI;
-	
-	ContactManager(WebView view, Activity app)
-	{
-		mApp = app;
-		mView = view;
+
+	/**
+	 * Constructor.
+	 */
+	public ContactManager()	{
 	}
 	
+	/**
+	 * Sets the context of the Command. This can then be used to do things like
+	 * get file paths associated with the Activity.
+	 * 
+	 * @param ctx The context of the main Activity.
+	 */
+	public void setContext(DroidGap ctx) {
+		this.ctx = ctx;
+	}
+
+	/**
+	 * Sets the main View of the application, this is the WebView within which 
+	 * a PhoneGap app runs.
+	 * 
+	 * @param webView The PhoneGap WebView
+	 */
+	public void setView(WebView webView) {
+		this.webView = webView;
+	}
+
+	/**
+	 * Executes the request and returns CommandResult.
+	 * 
+	 * @param action The command to execute.
+	 * @param args JSONArry of arguments for the command.
+	 * @return A CommandResult object with a status and message.
+	 */
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
+		String result = "";		
+		
+		try {
+			if (action.equals("getContactsAndSendBack")) {
+				this.getContactsAndSendBack();
+			}
+			else if (action.equals("search")) {
+				this.search(args.getString(0), args.getString(1), args.getString(2));
+			}
+			return new PluginResult(status, result);
+		} catch (JSONException e) {
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+		}
+	}
+
+	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action) {
+		return false;
+	}
+
+	/**
+     * Called when the system is about to start resuming a previous activity. 
+     */
+    public void onPause() {
+    }
+
+    /**
+     * Called when the activity will start interacting with the user. 
+     */
+    public void onResume() {
+    }
+    
+    /**
+     * Called by AccelBroker when listener is to be shut down.
+     * Stop listener.
+     */
+    public void onDestroy() {   	
+    }
+
+    /**
+     * Called when an activity you launched exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it. 
+     * 
+     * @param requestCode		The request code originally supplied to startActivityForResult(), 
+     * 							allowing you to identify who this result came from.
+     * @param resultCode		The integer result code returned by the child activity through its setResult().
+     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    }
+
+    //--------------------------------------------------------------------------
+    // LOCAL METHODS
+    //--------------------------------------------------------------------------
+
 	// This is to add backwards compatibility to the OLD Contacts API\
 	public void getContactsAndSendBack()
 	{
@@ -44,7 +139,7 @@ public class ContactManager {
 			};
 
 		try{
-			Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+			Cursor myCursor = this.ctx.managedQuery(mPeople, projection, 
 				null, null , People.NAME + " ASC");
 			processResults(myCursor, true);
 		}
@@ -76,7 +171,7 @@ public class ContactManager {
 		};
 		
 		try{
-			Cursor myCursor = mApp.managedQuery(mEmail, projection, 
+			Cursor myCursor = this.ctx.managedQuery(mEmail, projection, 
 						"contact_methods." + ContactMethods.DATA + " = ?" + "AND contact_methods.kind = 1", variables , ContactMethods.DATA + " ASC");
 			getMethodData(myCursor);
 						
@@ -125,7 +220,7 @@ public class ContactManager {
 			};
 			
 			try{
-				Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+				Cursor myCursor = this.ctx.managedQuery(mPeople, projection, 
 								conditions, variables , People.NAME + " ASC");
 				processResults(myCursor, false);
 			}
@@ -160,23 +255,28 @@ public class ContactManager {
 	            	email = "";
 	            
 	            // Code for backwards compatibility with the OLD Contacts API
-	            if (all)
-	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
-	            else
-	            	mView.loadUrl("javascript:navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
-	            	            
+	            if (all) {
+	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"');");	            	
+	            }
+	            else {
+	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"');");
+	            }           
 	        } while (cur.moveToNext());
-	        if (all)
-	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
-	        else
-	        	mView.loadUrl("javascript:navigator.contacts.droidDone();");
+	        if (all) {
+	        	this.ctx.sendJavascript("navigator.contacts.droidDone();");
+	        }
+	        else {
+	        	this.ctx.sendJavascript("navigator.contacts.droidDone();");
+	        }
 	    }
 	    else
 	    {
-	    	if(all)
-	    		mView.loadUrl("javascript:navigator.ContactManager.fail()");
-	    	else
-	    		mView.loadUrl("javascript:navigator.contacts.fail('None found!')");
+	    	if (all) {
+	    		this.ctx.sendJavascript("navigator.contacts.fail('Error');");
+	    	}
+	    	else {
+	    		this.ctx.sendJavascript("navigator.contacts.fail('None found!');");
+	    	}
 	    }
 	}	
 	
@@ -199,10 +299,10 @@ public class ContactManager {
 	            if(data != null)
 	            {
 	            	data.email = email;	            
-	            	mView.loadUrl("javascript:navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
+	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"');");
 	            }	           
 	        } while (cur.moveToNext());
-	        mView.loadUrl("javascript:navigator.contacts.droidDoneContacts();");	        
+	        this.ctx.sendJavascript("navigator.contacts.droidDoneContacts();");	        
 	    }	 
 	}		
 	
@@ -220,7 +320,7 @@ public class ContactManager {
 		};
 
 		try{
-			Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+			Cursor myCursor = this.ctx.managedQuery(mPeople, projection, 
 				People.PRIMARY_EMAIL_ID + " = ?", variables , People.NAME + " ASC");
 			data = getTriplet(myCursor);
 		}
@@ -275,7 +375,7 @@ public class ContactManager {
 		
 		try
 		{
-			Cursor myCursor = mApp.managedQuery(mEmail, projection, 
+			Cursor myCursor = this.ctx.managedQuery(mEmail, projection, 
 						"contact_methods." + ContactMethods._ID + " = ?" + " AND contact_methods.kind = 1", variables , ContactMethods.DATA + " ASC");
 			email = getEmailColumnData(myCursor);
 		}

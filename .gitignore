@@ -1,7 +1,2 @@
-default.properties
-bin
-gen
-assets/www/phonegap.js
-local.properties
+framework/bin
 framework/phonegap.jar
-.DS_Store

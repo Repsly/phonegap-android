@@ -7,8 +7,10 @@ import android.os.StatFs;
 import android.util.Log;
 
 public class DirectoryManager {
+
+  private static final String LOG_TAG = "PhoneGapDirectoryManager";
 	
-	protected boolean testFileExists (String name){
+	protected static boolean testFileExists (String name){
 		boolean status;
 		if ((testSaveLocationExists())&&(!name.equals(""))){
     		File path = Environment.getExternalStorageDirectory();
@@ -20,7 +22,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected long getFreeDiskSpace(){
+	protected static long getFreeDiskSpace(){
 		/*
 		 * gets the available SD card free space or returns -1 if the SD card is not mounted.
 		 */
@@ -38,7 +40,7 @@ public class DirectoryManager {
 		return (freeSpace);
 	}	
 	
-	protected boolean createDirectory(String directoryName){
+	protected static boolean createDirectory(String directoryName){
 		boolean status;
 		if ((testSaveLocationExists())&&(!directoryName.equals(""))){
 			File path = Environment.getExternalStorageDirectory();
@@ -50,7 +52,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean testSaveLocationExists(){
+	protected static boolean testSaveLocationExists(){
 		String sDCardStatus = Environment.getExternalStorageState();
 		boolean status;
 		if (sDCardStatus.equals(Environment.MEDIA_MOUNTED)){
@@ -60,7 +62,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean deleteDirectory(String fileName){
+	protected static boolean deleteDirectory(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			
@@ -78,7 +80,7 @@ public class DirectoryManager {
 						deletedFile.delete();
 					}
 					newPath.delete();
-					Log.i("DirectoryManager deleteDirectory", fileName);
+					Log.i(LOG_TAG, "DirectoryManager deleteDirectory " + fileName);
 					status = true;
 				}catch (Exception e){
 					e.printStackTrace();
@@ -92,7 +94,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean deleteFile(String fileName){
+	protected static boolean deleteFile(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			
@@ -103,21 +105,27 @@ public class DirectoryManager {
 			checker.checkDelete(newPath.toString());
 			if (newPath.isFile()){
 				try {
-					Log.i("DirectoryManager deleteFile", fileName);
+  				Log.i(LOG_TAG, "DirectoryManager deleteFile " + fileName);
 					newPath.delete();
 					status = true;
 				}catch (SecurityException se){
+					Log.i(LOG_TAG, "DirectoryManager deleteFile SecurityException");	
 					se.printStackTrace();
 					status = false;
 				}
-			}else
+			}else{				
+				Log.i(LOG_TAG, "DirectoryManager deleteFile newPath.isFile() returned false");
 				status = false;
-		}else
+			}
+		}else{		
+			Log.i(LOG_TAG, "DirectoryManager deleteFile testSaveLocationExists() returned false");
 			status = false;
+		}
 		return status;
 	}
 	
-	private File constructFilePaths (String file1, String file2){
+	private static File constructFilePaths (String file1, String file2){
+		//Log.d(LOG_TAG, "DirectoryManager constructFilePaths file1:" + file1 + " file2:" + file2);	
 		File newPath;
 		newPath = new File(file1+"/"+file2);
 		return newPath;
