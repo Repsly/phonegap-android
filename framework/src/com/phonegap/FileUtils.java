@@ -98,11 +98,9 @@ public class FileUtils {
 	 * Create a new directory. 
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
-    public int createDirectory(String dir){
-    	if (DirectoryManager.createDirectory(dir))
-            return 0;
-        else
-            return 1;
+    public void createDirectory(String dir){
+				File file = new File(dir);
+				file.mkdir();				
     } 
 	
     public String read(String filename)
@@ -152,7 +150,7 @@ public class FileUtils {
     public String readLogs(){
       try{             
         StringBuilder log = new StringBuilder();                    
-        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapLog:V PhoneGapDirectoryManager:V PhoneGapDroidGap:V PhoneGapFileUtils:V PhoneGap:V *:S");
+        Process process = Runtime.getRuntime().exec("logcat -v time -d PhoneGapLog:V PhoneGapDirectoryManager:V PhoneGapDroidGap:V PhoneGapFileUtils:V PhoneGap:V PhoneGapCameraLauncher:V *:S");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;

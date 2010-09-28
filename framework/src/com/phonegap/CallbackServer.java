@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
+import android.util.Log;
 
 /**
  * This class provides a way for Java to run JavaScript in the web page that has loaded PhoneGap.
@@ -24,6 +25,7 @@ import java.util.LinkedList;
  */
 public class CallbackServer implements Runnable {
 	
+  private static final String LOG_TAG = "PhoneGapCallbackServer";
 	/**
 	 * The list of JavaScript statements to be sent to JavaScript.
 	 */
@@ -74,7 +76,7 @@ public class CallbackServer implements Runnable {
 	 * Start the server on a new thread.
 	 */
 	public void startServer() {
-		//System.out.println("CallbackServer.startServer()");
+		Log.d(LOG_TAG,"CallbackServer.startServer()");
 		this.active = false;
 		
 		// Start server on new thread
@@ -106,18 +108,18 @@ public class CallbackServer implements Runnable {
 			String request;
 			ServerSocket waitSocket = new ServerSocket(0);
 			this.port = waitSocket.getLocalPort();
-			//System.out.println(" -- using port " +this.port);
+			Log.d(LOG_TAG," -- using port " +this.port);
 
 			 while (this.active) {
-				 //System.out.println("CallbackServer: Waiting for data on socket");
+				 Log.d(LOG_TAG,"CallbackServer: Waiting for data on socket");
 				 Socket connection = waitSocket.accept();
 				 BufferedReader xhrReader = new BufferedReader(new InputStreamReader(connection.getInputStream()),40);
 				 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 				 request = xhrReader.readLine();
-				 //System.out.println("Request="+request);
+				 Log.d(LOG_TAG,"Request="+request);
 				 if(request.contains("GET"))
 				 {
-					 //System.out.println(" -- Processing GET request");
+					 Log.d(LOG_TAG," -- Processing GET request");
 					 
 					 // Wait until there is some data to send, or send empty data every 30 sec 
 					 // to prevent XHR timeout on the client 
@@ -125,7 +127,7 @@ public class CallbackServer implements Runnable {
 						 while (this.empty) { 
 							 try { 
 								 this.wait(30000); // prevent timeout from happening
-								 //System.out.println(">>> break <<<");
+								 Log.d(LOG_TAG,">>> break <<<");
 								 break;
 							 } 
 							 catch (Exception e) { }
@@ -137,23 +139,24 @@ public class CallbackServer implements Runnable {
 					
 						 // If no data, then send 404 back to client before it times out
 						 if (this.empty) {
-							 //System.out.println(" -- sending data 0");
+							 Log.d(LOG_TAG," -- sending data 0");
 							 output.writeBytes("HTTP/1.1 404 NO DATA\r\n\r\n");
 						 }
 						 else {
-							 //System.out.println(" -- sending item");
+							 Log.d(LOG_TAG," -- sending item");
 							 output.writeBytes("HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript());
 						 }
 					 }					 
 				 }
-				 //System.out.println("CallbackServer: closing output");
+				 Log.d(LOG_TAG,"CallbackServer: closing output");
 				 output.close();				 
 			 }
 		 } catch (IOException e) {
+		   Log.d(LOG_TAG,"CallbackServer IOException");
 			 e.printStackTrace();
 		 }
 		 this.active = false;
-		 //System.out.println("CallbackServer.startServer() - EXIT");
+		 Log.d(LOG_TAG,"CallbackServer.startServer() - EXIT");
 	}
 		
 	/**
@@ -161,7 +164,7 @@ public class CallbackServer implements Runnable {
 	 * This stops the thread that the server is running on.
 	 */
 	public void stopServer() {
-		//System.out.println("CallbackServer.stopServer()");
+		Log.d(LOG_TAG,"CallbackServer.stopServer()");
 		this.active = false;
 
 		// Break out of server wait
@@ -184,7 +187,7 @@ public class CallbackServer implements Runnable {
 	 */
 	public int getSize() {
 		int size = this.javascript.size();
-		//System.out.println("getSize() = " + size);
+		Log.d(LOG_TAG, "getSize() = " + size);
 		return size;
 	}
 	
@@ -198,7 +201,7 @@ public class CallbackServer implements Runnable {
 			return null;
 		}
 		String statement = this.javascript.remove(0);
-		//System.out.println("CallbackServer.getJavascript() = " + statement);
+		Log.d(LOG_TAG, "CallbackServer.getJavascript() = " + statement);
 		if (this.javascript.size() == 0) {
 			synchronized (this) { 
 				this.empty = true;
@@ -213,7 +216,7 @@ public class CallbackServer implements Runnable {
 	 * @param statement
 	 */
 	public void sendJavascript(String statement) {
-		//System.out.println("CallbackServer.sendJavascript("+statement+")");
+		Log.d(LOG_TAG, "CallbackServer.sendJavascript("+statement+")");
 		this.javascript.add(statement);
 		synchronized (this) { 
 			this.empty = false;

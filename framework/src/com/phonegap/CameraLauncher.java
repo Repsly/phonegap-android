@@ -20,6 +20,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Environment;
 import android.webkit.WebView;
+import android.util.Log;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
@@ -27,6 +28,8 @@ import android.webkit.WebView;
  * the camera view was shown is redisplayed.
  */
 public class CameraLauncher implements Plugin {
+
+    private static final String LOG_TAG = "PhoneGapCameraLauncher";
 
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -158,7 +161,7 @@ public class CameraLauncher implements Plugin {
      * @param intent			An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-
+		Log.d(LOG_TAG, "onActivityResult");
 		// If image available
 		if (resultCode == Activity.RESULT_OK) {
 			try {
@@ -227,10 +230,11 @@ public class CameraLauncher implements Plugin {
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
+				Log.d(LOG_TAG, "calling navigator.camera.success");
 				this.ctx.sendJavascript("navigator.camera.success('" + js_out + "');");
 			}	
 		}
-		catch(Exception e) {
+		catch(Exception e) {				
 			this.failPicture("Error compressing image.");
 		}		
 	}

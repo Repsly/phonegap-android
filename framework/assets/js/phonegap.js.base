@@ -186,7 +186,8 @@ if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
 PhoneGap.onDeviceReady.subscribeOnce(function() {
-    PhoneGap.JSCallback();
+	//ianic iskljucio ovo, vartio se na klasican sistem
+  //PhoneGap.JSCallback();
 });
 
 PhoneGap.Channel.join(function() {
@@ -282,14 +283,14 @@ PhoneGap.exec = function(clazz, action, args) {
 
 PhoneGap.execAsync = function(success, fail, clazz, action, args) {
     try {
+				console.log("calling PhoneGap.execAsync action:" + action);
         var callbackId = clazz + PhoneGap.callbackId++;
         if (success || fail) {
             PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         }
-        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);
-        
+        var r = ""+PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);				        
         // If a result was returned
-        if (typeof r == "string") {
+        if (r.length > 0) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
@@ -408,14 +409,25 @@ PhoneGap.JSCallback = function() {
 
             // If callback has JavaScript statement to execute
             if (xmlhttp.status == 200) {
-
-                var msg = xmlhttp.responseText;
+							 
+							  var msg = xmlhttp.responseText;
+							  if (msg.startsWith('<?xml version="1.0"?>')){ 
+									//console.log("JSCallback invalid response, forcing restart callback server");
+									console.log(" status:" + xmlhttp.status + " statusText: " + xmlhttp.statusText);
+									console.log("JSCallback invalid response: " + msg);
+									//CallbackServer.restartServer();
+									setTimeout(PhoneGap.JSCallback, 1000);									
+									return;
+							  }
+								console.log("JSCallback xmlhttp.responseText: " + msg);								
+                
                 setTimeout(function() {
                     try {
                         var t = eval(msg);
                     }
                     catch (e) {
                         console.log("JSCallback Error: "+e);
+												console.log("msg: " + msg);
                     }
                 }, 1);
                 setTimeout(PhoneGap.JSCallback, 1);
@@ -428,13 +440,14 @@ PhoneGap.JSCallback = function() {
 
             // If error, restart callback server
             else {
-                console.log("JSCallback Error: Request failed.");
+                console.log("JSCallback Error: Request failed. status:" + xmlhttp.status + " statusText: " + xmlhttp.statusText );
                 CallbackServer.restartServer();
                 setTimeout(PhoneGap.JSCallback, 100);
             }
         }
     }
 
+  	console.log("JSCallback start listening on: " + "http://127.0.0.1:"+CallbackServer.getPort()+"/");
     xmlhttp.open("GET", "http://127.0.0.1:"+CallbackServer.getPort()+"/" , true);
     xmlhttp.send();
 };

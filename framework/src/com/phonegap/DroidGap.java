@@ -267,7 +267,8 @@ public class DroidGap extends Activity {
      * @param appView
      */
     private void bindBrowser(WebView appView) {
-        this.callbackServer = new CallbackServer();
+				//ianic iskljucio ovo i vratio na klasicni sistem
+        //this.callbackServer = new CallbackServer();
     	this.pluginManager = new PluginManager(appView, this);
         this.fs = new FileUtils(appView, this);
         this.mKey = new BrowserKey(appView, this);
@@ -278,7 +279,8 @@ public class DroidGap extends Activity {
         appView.addJavascriptInterface(this.fs, "FileUtil");
         appView.addJavascriptInterface(this.mKey, "BackButton");
         
-        appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
+				//ianic iskljucio ovo i vratio na klasicni sistem
+        //appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
     	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
 
     	// Add in support for storage and location for Android 1.X devices
@@ -333,7 +335,9 @@ public class DroidGap extends Activity {
      * @param message
      */
     public void sendJavascript(String statement) {
-    	this.callbackServer.sendJavascript(statement);
+			this.loadUrl("javascript:" + statement); 	
+      //ianic iskljucio ovo i vratio na klasicni sistem
+    	//this.callbackServer.sendJavascript(statement);
     }
     
     /**

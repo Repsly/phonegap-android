@@ -17,6 +17,7 @@ function Device() {
     var me = this;
     PhoneGap.execAsync(
         function(info) {
+					  //console.log("initializing PhoneGap, simSerialNumber:" + info.simSerialNumber);
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
