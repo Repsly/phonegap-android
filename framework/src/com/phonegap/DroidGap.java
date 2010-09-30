@@ -387,6 +387,12 @@ public class DroidGap extends Activity {
                 		result.confirm();
                 	}
             	});
+						dlg.setOnKeyListener(
+            	new DialogInterface.OnKeyListener() {
+                	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+											return true;
+                    }
+                });
             dlg.create();
             dlg.show();
             return true;
@@ -416,6 +422,12 @@ public class DroidGap extends Activity {
             	new DialogInterface.OnClickListener() {
                 	public void onClick(DialogInterface dialog, int which) {
                 		result.cancel();
+                    }
+                });
+						dlg.setOnKeyListener(
+            	new DialogInterface.OnKeyListener() {
+                	public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+											return true;
                     }
                 });
             dlg.create();
