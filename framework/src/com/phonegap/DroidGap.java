@@ -435,6 +435,12 @@ public class DroidGap extends Activity {
             return true;
         }
 
+				@Override
+				public boolean onJsTimeout(){
+						Log.d(LOG_TAG, "onJsTimeout - ignoring");
+						return false;
+				}
+
     }
 
     /**
