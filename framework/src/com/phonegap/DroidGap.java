@@ -155,7 +155,7 @@ public class DroidGap extends Activity {
            
         this.appView.setWebViewClient(new GapViewClient(this));
 
-        this.appView.setInitialScale(100);
+        this.appView.setInitialScale(1);
         this.appView.setVerticalScrollBarEnabled(false);
         this.appView.requestFocusFromTouch();
 
